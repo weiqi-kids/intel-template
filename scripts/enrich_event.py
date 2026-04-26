@@ -311,11 +311,12 @@ def process_events(
         if process_events._industry_kw and not any(kw in title_lower for kw in process_events._industry_kw):
             continue
 
-        # 標註事件
-        seq_by_date[fallback_date] += 1
+        # 標註事件（使用實際事件日期做 seq 計數，避免跨日期 ID 衝突）
+        actual_date = get_event_date(raw_event, fallback_date)
+        seq_by_date[actual_date] += 1
         enriched = enrich_event(
             raw_event, matcher, sentiment_analyzer, scorer,
-            fallback_date, seq_by_date[fallback_date]
+            fallback_date, seq_by_date[actual_date]
         )
 
         # 按事件的實際日期分組

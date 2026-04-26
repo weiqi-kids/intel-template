@@ -6,3 +6,4 @@
 !.env.example
 node_modules/
 lib/__pycache__/
+__pycache__/

@@ -186,7 +186,11 @@ def enrich_event(
         "importance": importance,
         "title": title,
         "content": content,
-        "sources": raw_event.get("sources", []),
+        "sources": raw_event.get("sources") or (
+            [{"name": raw_event["source"], "url": raw_event.get("url", ""), "type": "rss"}]
+            if raw_event.get("source")
+            else []
+        ),
     }
 
     return event

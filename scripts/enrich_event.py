@@ -267,6 +267,16 @@ def process_events(
             skipped_no_date += 1
             continue
 
+        # 過濾掉超過 7 天前的事件（避免 RSS 回傳歷史資料）
+        event_date_str = get_event_date(raw_event, fallback_date)
+        try:
+            event_dt = datetime.fromisoformat(event_date_str)
+            fallback_dt = datetime.fromisoformat(fallback_date)
+            if (fallback_dt - event_dt).days > 7:
+                continue
+        except (ValueError, TypeError):
+            pass
+
         # 預先檢查相關性
         title = raw_event.get("title", "")
         content = raw_event.get("content", "") or raw_event.get("summary", "")

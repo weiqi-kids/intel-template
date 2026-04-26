@@ -91,6 +91,10 @@ class CompanyFetcher(ABC):
     timeout: int = 30000  # ms
     wait_for_selector: Optional[str] = None  # 等待特定元素出現
 
+    # Retry 設定
+    max_retries: int = 3
+    retry_base_delay: float = 2.0  # 秒
+
     def __init__(self):
         if sync_playwright is None or BeautifulSoup is None:
             raise ImportError("playwright and beautifulsoup4 are required")
@@ -164,27 +168,35 @@ class CompanyFetcher(ABC):
         pass
 
     def _get_page(self, url: str, wait_selector: Optional[str] = None) -> Optional[str]:
-        """使用 Playwright 取得頁面 HTML"""
-        try:
-            logger.info(f"Fetching {url} with Playwright")
+        """使用 Playwright 取得頁面 HTML（含 retry）"""
+        import time
 
-            # 如果沒有 browser，建立一個臨時的
-            if self._browser is None:
-                with sync_playwright() as p:
-                    browser = p.chromium.launch(headless=self.headless)
-                    page = browser.new_page()
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                logger.info(f"[{self.company_id}] Fetching {url} (attempt {attempt}/{self.max_retries})")
+
+                if self._browser is None:
+                    with sync_playwright() as p:
+                        browser = p.chromium.launch(headless=self.headless)
+                        page = browser.new_page()
+                        html = self._fetch_page_content(page, url, wait_selector)
+                        browser.close()
+                        return html
+                else:
+                    page = self._browser.new_page()
                     html = self._fetch_page_content(page, url, wait_selector)
-                    browser.close()
+                    page.close()
                     return html
-            else:
-                page = self._browser.new_page()
-                html = self._fetch_page_content(page, url, wait_selector)
-                page.close()
-                return html
 
-        except Exception as e:
-            logger.error(f"Failed to fetch {url}: {e}")
-            return None
+            except Exception as e:
+                logger.error(f"[{self.company_id}] Failed to fetch {url} (attempt {attempt}/{self.max_retries}): {e}")
+                if attempt < self.max_retries:
+                    delay = self.retry_base_delay * (2 ** (attempt - 1))
+                    logger.info(f"[{self.company_id}] Retrying in {delay:.0f}s...")
+                    time.sleep(delay)
+                else:
+                    logger.error(f"[{self.company_id}] All {self.max_retries} attempts failed for {url}")
+                    return None
 
     def _fetch_page_content(self, page: Page, url: str, wait_selector: Optional[str] = None) -> str:
         """實際抓取頁面內容"""

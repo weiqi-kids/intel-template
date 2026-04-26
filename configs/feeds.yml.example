@@ -1,0 +1,32 @@
+# configs/feeds.yml.example
+#
+# 產業媒體 RSS feed 設定
+# 這些 feed 提供產業通用新聞，補充 companies.yml 中各公司的 rss_url
+#
+# 複製為 feeds.yml 後依產業修改：
+#   cp configs/feeds.yml.example configs/feeds.yml
+#
+# 格式說明：
+#   - id: feed 識別碼（用於 raw data 的 source 欄位）
+#   - url: RSS feed URL
+#   - name: 顯示名稱
+
+feeds:
+  # -- 以下為範例，請依實際產業替換 --
+  - id: reuters_business
+    url: https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best
+    name: Reuters Business
+
+  - id: ft_companies
+    url: https://www.ft.com/companies?format=rss
+    name: Financial Times Companies
+
+  # -- 台灣財經 --
+  - id: cnyes
+    url: https://news.cnyes.com/news/cat/headline/rss
+    name: 鉅亨網
+
+  # -- 產業專門（依產業替換）--
+  # - id: eetimes
+  #   url: https://www.eetimes.com/feed/
+  #   name: EE Times

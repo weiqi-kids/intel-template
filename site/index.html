@@ -3,9 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>記憶體供應鏈情報</title>
+    <title>供應鏈情報</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        :root {
+            /* OKLCH Design Tokens */
+            /* 背景層級 */
+            --bg-base: oklch(0.97 0.005 250);
+            --bg-surface: oklch(1.0 0 0);
+            --bg-muted: oklch(0.955 0.005 250);
+            --bg-subtle: oklch(0.977 0.003 250);
+            --bg-active: oklch(0.915 0.005 250);
+            --bg-overlay: oklch(0.90 0.008 250);
+            --bg-hover: oklch(0.92 0.005 250);
+            /* 淺色語意背景 */
+            --bg-warn-light: oklch(0.96 0.065 90);
+            --bg-info-light: oklch(0.945 0.035 240);
+            --bg-pass-light: oklch(0.98 0.025 155);
+            /* 文字 */
+            --text-primary: oklch(0.20 0.01 250);
+            --text-secondary: oklch(0.45 0.01 250);
+            --text-muted: oklch(0.60 0.008 250);
+            /* 語意色 */
+            --color-critical: oklch(0.55 0.22 25);
+            --color-warn: oklch(0.52 0.14 80);
+            --color-pass: oklch(0.48 0.16 150);
+            --color-info: oklch(0.52 0.13 240);
+            --color-link: oklch(0.48 0.15 250);
+            /* 互動色 */
+            --color-brand: oklch(0.585 0.185 260);
+            --color-ir: oklch(0.535 0.21 295);
+            --color-announce: oklch(0.74 0.16 75);
+            --color-feedback: oklch(0.65 0.145 165);
+            --color-sponsor: oklch(0.63 0.21 22);
+            /* 漸層 */
+            --color-gradient-start: oklch(0.66 0.11 300);
+            --color-gradient-end: oklch(0.87 0.075 330);
+            /* 供應鏈 */
+            --color-upstream: oklch(0.55 0.16 55);
+            --color-midstream: oklch(0.52 0.13 240);
+            --color-downstream: oklch(0.48 0.16 150);
+            /* 邊框 */
+            --border-subtle: oklch(0.85 0.005 250);
+            --border-warn: oklch(0.87 0.145 90);
+            --border-pass: oklch(0.87 0.11 155);
+            /* Hex fallbacks — for JS/SVG */
+            --hex-critical: #c93135;
+            --hex-warn: #8a7020;
+            --hex-pass: #1e8050;
+            --hex-info: #2a6bb8;
+            --hex-upstream: #b86a2a;
+            --hex-midstream: #2a6bb8;
+            --hex-downstream: #1e8050;
+            --hex-brand: #3b82f6;
+            --hex-ir: #8b5cf6;
+            --hex-announce: #f59e0b;
+            --hex-feedback: #10b981;
+            --hex-sponsor: #ff5e5b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,15 +70,15 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #1a1a2e;
+            background: var(--bg-base, #f5f6f8);
+            color: var(--text-primary, #1e2030);
             padding: 20px;
         }
 
         h1 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            color: #1a1a2e;
+            color: var(--text-primary, #1e2030);
         }
 
         .main-container {
@@ -40,8 +96,8 @@
         }
 
         .panel {
-            background: #ffffff;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -71,8 +127,8 @@
         }
 
         .detail-panel {
-            background: #ffffff;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 8px;
             padding: 20px;
             height: fit-content;
@@ -86,8 +142,8 @@
         .detail-panel h2 {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            color: #1a1a2e;
-            border-bottom: 1px solid #e0e4e8;
+            color: var(--text-primary, #1e2030);
+            border-bottom: 1px solid var(--border-subtle, #e0e4e8);
             padding-bottom: 10px;
         }
 
@@ -104,7 +160,7 @@
 
         .report-section h3 {
             font-size: 0.9rem;
-            color: #1a1a2e;
+            color: var(--text-primary, #1e2030);
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -119,23 +175,23 @@
         }
 
         .report-section.daily h3::before {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            background: var(--color-critical, #c93135);
         }
 
         .report-section.weekly h3::before {
-            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            background: var(--color-info, #2a6bb8);
         }
 
         .report-section.analysis h3::before {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: var(--color-link, #1e5ab8);
         }
 
         .report-section.financials h3::before {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            background: var(--color-pass, #1e8050);
         }
 
         .report-section.weekly-llm h3::before {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: oklch(0.50 0.17 300);
         }
 
         .llm-summary {
@@ -156,7 +212,7 @@
             align-items: flex-start;
             gap: 8px;
             padding: 6px 0;
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--bg-muted, #f0f2f5);
             font-size: 0.82rem;
             color: #333;
             line-height: 1.4;
@@ -172,9 +228,9 @@
             margin-top: 4px;
         }
 
-        .signal-dot.red { background: #ef4444; }
-        .signal-dot.yellow { background: #f59e0b; }
-        .signal-dot.green { background: #10b981; }
+        .signal-dot.red { background: var(--color-critical, #c93135); }
+        .signal-dot.yellow { background: var(--color-warn, #8a7020); }
+        .signal-dot.green { background: var(--color-pass, #1e8050); }
 
         .financial-quarter {
             font-size: 0.75rem;
@@ -187,7 +243,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 5px 0;
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--bg-muted, #f0f2f5);
             font-size: 0.8rem;
         }
 
@@ -218,12 +274,12 @@
             text-align: right;
         }
 
-        .financial-change.up { color: #ef4444; }
-        .financial-change.down { color: #10b981; }
-        .financial-change.flat { color: #888; }
+        .financial-change.up { color: var(--color-critical, #c93135); }
+        .financial-change.down { color: var(--color-pass, #1e8050); }
+        .financial-change.flat { color: var(--text-muted, #8a8c98); }
 
         .financial-row.alert {
-            background: #fef3c7;
+            background: var(--bg-warn-light, #fef3c7);
             margin: 0 -8px;
             padding: 5px 8px;
             border-radius: 4px;
@@ -231,7 +287,7 @@
 
         .watchlist-item {
             padding: 6px 0;
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--bg-muted, #f0f2f5);
             font-size: 0.82rem;
         }
 
@@ -239,7 +295,7 @@
 
         .watchlist-company {
             font-weight: 500;
-            color: #1a1a2e;
+            color: var(--text-primary, #1e2030);
         }
 
         .watchlist-reason {
@@ -255,8 +311,8 @@
         }
 
         .date-nav button {
-            background: #f0f2f5;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-muted, #f0f2f5);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 4px;
             padding: 4px 8px;
             cursor: pointer;
@@ -266,8 +322,8 @@
         }
 
         .date-nav button:hover:not(:disabled) {
-            background: #e4e7eb;
-            color: #1a1a2e;
+            background: var(--bg-active, #e4e7eb);
+            color: var(--text-primary, #1e2030);
         }
 
         .date-nav button:disabled {
@@ -336,7 +392,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid #f0f2f5;
+            border-bottom: 1px solid var(--bg-muted, #f0f2f5);
             font-size: 0.85rem;
         }
 
@@ -345,7 +401,7 @@
         }
 
         .news-item:hover {
-            background: #f8f9fb;
+            background: var(--bg-subtle, #f8f9fb);
             margin: 0 -8px;
             padding: 8px;
             border-radius: 4px;
@@ -361,8 +417,8 @@
         }
 
         .news-score {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: var(--bg-info-light, #e0f2fe);
+            color: var(--color-info, #0369a1);
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.75rem;
@@ -376,13 +432,13 @@
         }
 
         .anomaly-item {
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
+            background: var(--bg-warn-light, #fef3c7);
+            border: 1px solid var(--border-warn, #fcd34d);
             border-radius: 6px;
             padding: 8px 12px;
             margin-bottom: 8px;
             font-size: 0.8rem;
-            color: #92400e;
+            color: var(--color-warn, #92400e);
         }
 
         .anomaly-item:last-child {
@@ -390,9 +446,9 @@
         }
 
         .no-anomaly {
-            background: #f0fdf4;
-            border: 1px solid #86efac;
-            color: #166534;
+            background: var(--bg-pass-light, #f0fdf4);
+            border: 1px solid var(--border-pass, #86efac);
+            color: var(--color-pass, #166534);
             padding: 8px 12px;
             border-radius: 6px;
             font-size: 0.8rem;
@@ -431,7 +487,7 @@
         .company-bar-visual {
             flex: 1;
             height: 14px;
-            background: linear-gradient(90deg, #a18cd1 0%, #fbc2eb 100%);
+            background: linear-gradient(90deg, var(--color-gradient-start, #a18cd1) 0%, var(--color-gradient-end, #fbc2eb) 100%);
             border-radius: 3px;
         }
 
@@ -467,20 +523,20 @@
         }
 
         .detail-tag {
-            background: #f0f2f5;
+            background: var(--bg-muted, #f0f2f5);
             padding: 4px 10px;
             border-radius: 4px;
             font-size: 0.75rem;
             color: #555;
         }
 
-        .detail-tag.positive { background: rgba(16, 185, 129, 0.15); color: #059669; }
-        .detail-tag.negative { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
-        .detail-tag.neutral { background: rgba(107, 114, 128, 0.15); color: #6b7280; }
+        .detail-tag.positive { background: oklch(0.92 0.04 150); color: var(--color-pass, #1e8050); }
+        .detail-tag.negative { background: oklch(0.92 0.06 25); color: var(--color-critical, #c93135); }
+        .detail-tag.neutral { background: var(--bg-overlay, #dfe0e5); color: var(--text-secondary, #5e6070); }
 
         .source-item {
-            background: #f8f9fb;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-subtle, #f8f9fb);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 10px;
@@ -501,9 +557,9 @@
             color: #fff;
         }
 
-        .source-type.news { background: #3b82f6; }
-        .source-type.ir { background: #8b5cf6; }
-        .source-type.announcement { background: #f59e0b; }
+        .source-type.news { background: var(--color-brand, #3b82f6); }
+        .source-type.ir { background: var(--color-ir, #8b5cf6); }
+        .source-type.announcement { background: var(--color-announce, #f59e0b); }
 
         .source-date {
             font-size: 0.75rem;
@@ -513,11 +569,11 @@
         .source-title {
             font-weight: 500;
             margin-bottom: 6px;
-            color: #1a1a2e;
+            color: var(--text-primary, #1e2030);
         }
 
         .source-title a {
-            color: #2563eb;
+            color: var(--color-link, #2563eb);
             text-decoration: none;
         }
 
@@ -529,14 +585,14 @@
             font-size: 0.85rem;
             color: #555;
             line-height: 1.5;
-            border-left: 2px solid #d0d5dd;
+            border-left: 2px solid var(--border-subtle, #d0d5dd);
             padding-left: 10px;
             margin-top: 8px;
         }
 
         .source-excerpt mark {
             background: rgba(37, 99, 235, 0.2);
-            color: #1e40af;
+            color: var(--color-link, #1e40af);
             padding: 0 2px;
         }
 
@@ -547,7 +603,7 @@
         }
 
         .company-chip {
-            background: #f0f2f5;
+            background: var(--bg-muted, #f0f2f5);
             padding: 4px 10px;
             border-radius: 4px;
             font-size: 0.8rem;
@@ -557,17 +613,17 @@
         }
 
         .company-chip:hover {
-            background: #e4e7eb;
+            background: var(--bg-active, #e4e7eb);
         }
 
-        .company-chip.upstream { border-left: 3px solid #f59e0b; }
-        .company-chip.midstream { border-left: 3px solid #3b82f6; }
-        .company-chip.downstream { border-left: 3px solid #10b981; }
+        .company-chip.upstream { border-left: 3px solid var(--color-upstream, #b86a2a); }
+        .company-chip.midstream { border-left: 3px solid var(--color-midstream, #2a6bb8); }
+        .company-chip.downstream { border-left: 3px solid var(--color-downstream, #1e8050); }
 
         .brush .selection {
-            fill: #3b82f6;
+            fill: var(--color-brand, #3b82f6);
             fill-opacity: 0.2;
-            stroke: #3b82f6;
+            stroke: var(--color-brand, #3b82f6);
         }
 
         .stock-line {
@@ -588,7 +644,7 @@
 
         .node text {
             font-size: 11px;
-            fill: #1a1a2e;
+            fill: var(--text-primary, #1a1a2e);
             pointer-events: none;
             font-weight: 500;
         }
@@ -615,7 +671,7 @@
         }
 
         .event-dot.selected {
-            stroke: #1a1a2e;
+            stroke: var(--text-primary, #1a1a2e);
             stroke-width: 3;
         }
 
@@ -630,8 +686,8 @@
 
         .tooltip {
             position: absolute;
-            background: #ffffff;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 4px;
             padding: 10px 14px;
             font-size: 12px;
@@ -645,7 +701,7 @@
         }
 
         .tooltip strong {
-            color: #1a1a2e;
+            color: var(--text-primary, #1e2030);
         }
 
         .layer-label {
@@ -655,7 +711,7 @@
         }
 
         .node.selected circle {
-            stroke: #3b82f6;
+            stroke: var(--color-brand, #3b82f6);
             stroke-width: 4;
             filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5));
         }
@@ -669,7 +725,7 @@
         }
 
         .link.highlighted {
-            stroke: #3b82f6;
+            stroke: var(--color-brand, #3b82f6);
             stroke-opacity: 1;
             stroke-width: 2;
         }
@@ -680,20 +736,20 @@
             align-items: center;
             margin-bottom: 15px;
             padding: 10px 15px;
-            background: #ffffff;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .info-bar .selected-info {
-            color: #2563eb;
+            color: var(--color-link, #2563eb);
             font-weight: 500;
         }
 
         .info-bar button {
-            background: #f0f2f5;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-muted, #f0f2f5);
+            border: 1px solid var(--border-subtle, #d5d6da);
             color: #555;
             padding: 6px 12px;
             border-radius: 4px;
@@ -702,8 +758,8 @@
         }
 
         .info-bar button:hover {
-            background: #e4e7eb;
-            color: #1a1a2e;
+            background: var(--bg-active, #e4e7eb);
+            color: var(--text-primary, #1e2030);
         }
 
         .legend {
@@ -734,8 +790,8 @@
 
         .tab {
             padding: 6px 12px;
-            background: #f0f2f5;
-            border: 1px solid #e0e4e8;
+            background: var(--bg-muted, #f0f2f5);
+            border: 1px solid var(--border-subtle, #d5d6da);
             border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -743,24 +799,93 @@
         }
 
         .tab.active {
-            background: #ffffff;
-            color: #1a1a2e;
-            border-color: #3b82f6;
+            background: var(--bg-surface, #ffffff);
+            color: var(--text-primary, #1e2030);
+            border-color: var(--color-brand, #3b82f6);
+        }
+
+
+        /* === Fund Flow === */
+        .fund-flow-summary {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .etf-card {
+            flex: 1;
+            padding: 6px 10px;
+            background: var(--bg-subtle, #f8f9fb);
+            border: 1px solid var(--border-subtle, #d5d6da);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .etf-card.active {
+            background: var(--bg-surface, #ffffff);
+            border-color: var(--color-brand, #3b82f6);
+        }
+
+        .etf-card .etf-name { font-size: 0.7rem; color: #888; }
+        .etf-card .etf-price { font-size: 1rem; font-weight: 600; }
+        .etf-card .etf-change { font-size: 0.75rem; font-weight: 500; }
+        .etf-card .etf-change.up { color: var(--color-critical, #c93135); }
+        .etf-card .etf-change.down { color: var(--color-pass, #1e8050); }
+        .etf-card .etf-flow { font-size: 0.65rem; margin-top: 2px; }
+        .etf-card .etf-flow.inflow { color: var(--color-pass, #1e8050); }
+        .etf-card .etf-flow.outflow { color: var(--color-critical, #c93135); }
+
+        /* === Holders === */
+        .holders-table { width: 100%; font-size: 0.78rem; border-collapse: collapse; }
+        .holders-table th {
+            text-align: left; padding: 5px 6px;
+            border-bottom: 1px solid var(--border-subtle, #d5d6da);
+            color: #888; font-weight: 500; font-size: 0.7rem;
+        }
+        .holders-table th:nth-child(n+3) { text-align: right; }
+        .holders-table td { padding: 4px 6px; border-bottom: 1px solid var(--bg-muted, #f0f2f5); }
+        .holders-table td:nth-child(n+3) { text-align: right; }
+        .holders-table tr:hover { background: var(--bg-subtle, #f8f9fb); }
+        .holders-select { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+        .holder-chip {
+            padding: 3px 8px;
+            background: var(--bg-muted, #f0f2f5);
+            border: 1px solid var(--border-subtle, #d5d6da);
+            border-radius: 4px; font-size: 0.7rem; cursor: pointer;
+        }
+        .holder-chip.active {
+            background: var(--bg-surface, #ffffff);
+            border-color: var(--color-brand, #3b82f6);
+            color: var(--color-brand, #3b82f6);
         }
 
         .tab:hover:not(.active) {
-            background: #e4e7eb;
+            background: var(--bg-active, #e4e7eb);
+        }
+
+        .company-link {
+            color: inherit;
+            text-decoration: none;
+        }
+        .company-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .info-bar { flex-wrap: wrap; }
+            #etf-header { width: 100%; order: 3; justify-content: center; margin-top: 4px; }
         }
     </style>
 </head>
 <body>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h1>記憶體供應鏈情報</h1>
+        <h1 id="site-title">供應鏈情報</h1>
         <nav style="display: flex; gap: 8px;">
-            <a href="index.html" style="padding: 8px 16px; background: #3b82f6; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">情報總覽</a>
-            <a href="how-it-works.html" style="padding: 8px 16px; background: #f0f2f5; color: #666; border: 1px solid #e0e4e8; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">運作流程</a>
-            <a onclick="openFeedback()" style="padding: 8px 16px; background: #10b981; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; cursor: pointer;">💬 意見回饋</a>
-            <a href="https://ko-fi.com/lightchang" target="_blank" style="padding: 8px 16px; background: #ff5e5b; color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">☕ 贊助</a>
+            <a href="index.html" style="padding: 8px 16px; background: var(--color-brand, #3b82f6); color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">情報總覽</a>
+            <a href="how-it-works.html" style="padding: 8px 16px; background: var(--bg-muted, #f0f2f5); color: #666; border: 1px solid var(--border-subtle, #d5d6da); border-radius: 6px; text-decoration: none; font-size: 0.9rem;">運作流程</a>
+            <a onclick="openFeedback()" style="padding: 8px 16px; background: var(--color-feedback, #10b981); color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem; cursor: pointer;">💬 意見回饋</a>
+            <a href="https://ko-fi.com/lightchang" target="_blank" style="padding: 8px 16px; background: var(--color-sponsor, #ff5e5b); color: white; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">☕ 贊助</a>
         </nav>
     </div>
 
@@ -769,6 +894,7 @@
             <span>已選擇：</span>
             <span class="selected-info" id="selected-company">無（點擊節點或事件）</span>
         </div>
+        <div id="etf-header" style="display:flex; gap:12px; font-size:0.8rem;"></div>
         <button id="reset-btn">重置</button>
     </div>
 
@@ -783,13 +909,14 @@
                 <div id="stock-chart" class="panel">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                         <div class="tab-bar" id="stock-tabs">
-                            <div class="tab active" data-view="trend">走勢圖</div>
-                            <div class="tab" data-view="heatmap">熱力圖</div>
+                            <div class="tab active" data-view="trend">走勢</div>
+                            <div class="tab" data-view="heatmap">熱力</div>
+                            <div class="tab" data-view="fundflow">流向</div>
+                            <div class="tab" data-view="holders">持倉</div>
+                            <div class="tab" data-view="backtest">回測</div>
+                            <div class="tab" data-view="distribution">分布</div>
                         </div>
                         <div class="tab-bar" id="stock-range">
-                            <div class="tab" data-range="1">日</div>
-                            <div class="tab" data-range="5">週</div>
-                            <div class="tab active" data-range="20">月</div>
                         </div>
                     </div>
                     <div id="stock-trend-view">
@@ -800,9 +927,27 @@
                         <div id="heatmap-container"></div>
                         <div class="legend" style="justify-content:center; margin-top:8px;">
                             <span style="font-size:0.7rem; color:#888;">跌 3%+</span>
-                            <div style="width:120px; height:10px; border-radius:3px; background:linear-gradient(90deg, rgb(220,60,60), rgb(200,200,200), rgb(40,230,60));"></div>
+                            <div style="width:120px; height:10px; border-radius:3px; background:linear-gradient(90deg, var(--hex-critical, #c93135), var(--bg-overlay, #dfe0e5), var(--hex-pass, #1e8050));"></div>
                             <span style="font-size:0.7rem; color:#888;">漲 3%+</span>
                         </div>
+                    </div>
+                    <div id="stock-fundflow-view" style="display:none;">
+                        <div class="fund-flow-summary" id="etf-cards"></div>
+                        <svg id="fundflow-svg"></svg>
+                        <div class="legend" style="justify-content:center; margin-top:8px;">
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--hex-pass, #1e8050)"></div> 資金流入</div>
+                            <div class="legend-item"><div class="legend-dot" style="background:var(--hex-critical, #c93135)"></div> 資金流出</div>
+                        </div>
+                    </div>
+                    <div id="stock-holders-view" style="display:none;">
+                        <div class="holders-select" id="holders-company-select"></div>
+                        <div id="holders-table-container"></div>
+                    </div>
+                    <div id="stock-backtest-view" style="display:none;">
+                        <div id="backtest-container"></div>
+                    </div>
+                    <div id="stock-distribution-view" style="display:none;">
+                        <div id="distribution-container"></div>
                     </div>
                 </div>
 
@@ -816,9 +961,9 @@
                 <div class="panel-title">事件時間軸（點擊查看詳情）</div>
                 <svg id="timeline-svg"></svg>
                 <div class="legend">
-                    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> 正面</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div> 中性</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> 負面</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--hex-pass, #1e8050)"></div> 正面</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted, #8a8c98)"></div> 中性</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--hex-critical, #c93135)"></div> 負面</div>
                 </div>
             </div>
         </div>
@@ -826,7 +971,7 @@
         <div class="detail-panel" id="detail-panel">
             <!-- 報告區塊（預設顯示） -->
             <div id="reports-view">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e0e4e8; padding-bottom:10px; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle, #e0e4e8); padding-bottom:10px; margin-bottom:15px;">
                     <h2 style="margin:0; border:none; padding:0;">摘要</h2>
                     <div class="date-nav">
                         <button id="date-prev" title="前一天">&larr;</button>
@@ -874,7 +1019,7 @@
 
             <!-- 詳細資訊區塊（點擊事件時顯示） -->
             <div id="detail-view" style="display:none;">
-                <h2>詳細資訊 <button id="back-to-reports" style="float:right; font-size:0.75rem; padding:4px 10px; border:1px solid #ddd; border-radius:4px; background:#f8f9fb; cursor:pointer;">← 返回摘要</button></h2>
+                <h2>詳細資訊 <button id="back-to-reports" style="float:right; font-size:0.75rem; padding:4px 10px; border:1px solid var(--border-subtle, #ddd); border-radius:4px; background:var(--bg-subtle, #f8f9fb); cursor:pointer;">← 返回摘要</button></h2>
                 <div id="detail-content"></div>
             </div>
         </div>
@@ -891,7 +1036,9 @@
             stockPrices: {},
             events: [],
             dailyReport: null,
-            weeklyReport: null
+            weeklyReport: null,
+            financialsHistory: null,    // NEW
+            holdersHistory: null,       // NEW
         };
 
         // Load data from JSON files
@@ -971,6 +1118,15 @@
                 await loadReportForDate(state.reportDates[0]);
             }
 
+
+            // fund_flow.json no longer loaded — calculated from stockPrices
+
+            // Load holders data
+            try {
+                const hResp = await fetch('data/holders.json');
+                if (hResp.ok) data.holders = await hResp.json();
+            } catch (e) {}
+
             // If no data loaded, use demo
             if (!hasRealData) {
                 loadDemoData();
@@ -978,6 +1134,9 @@
 
             // 產生公司顏色
             stockColors = generateCompanyColors(data.companies);
+            companyMap = Object.fromEntries(data.companies.map(c => [c.id, c]));
+            state.smhReturn = calcReturn('etf_smh', state.timeRange[0], state.timeRange[1]);
+            updateHeaderETF();
 
             init();
         }
@@ -1141,14 +1300,219 @@
             fullTimeRange: [new Date("2025-09-01"), new Date()],
             timeRange: [new Date("2025-09-01"), new Date()],
             reportDates: [],
+            fundFlow: null,
+            holders: null,
             currentReportIdx: 0,
+            smhReturn: null,
         };
 
+        // ===== Investment Analysis Utilities =====
+
+        function findNearestTradingDay(prices, target, mode) {
+            if (!prices || prices.length === 0) return -1;
+            let lo = 0, hi = prices.length - 1;
+            if (mode === 'after') {
+                if (prices[hi].date < target) return -1;
+                while (lo < hi) {
+                    const mid = (lo + hi) >> 1;
+                    if (prices[mid].date < target) lo = mid + 1;
+                    else hi = mid;
+                }
+                return lo;
+            } else {
+                if (prices[lo].date > target) return -1;
+                while (lo < hi) {
+                    const mid = (lo + hi + 1) >> 1;
+                    if (prices[mid].date > target) hi = mid - 1;
+                    else lo = mid;
+                }
+                return lo;
+            }
+        }
+
+        function calcReturn(companyId, start, end) {
+            const prices = data.stockPrices[companyId];
+            if (!prices || prices.length < 2) return null;
+            const si = findNearestTradingDay(prices, start, 'after');
+            const ei = findNearestTradingDay(prices, end, 'before');
+            if (si < 0 || ei < 0 || si >= ei) return null;
+            return ((prices[ei].close - prices[si].close) / prices[si].close) * 100;
+        }
+
+        function calcMDD(companyId, start, end) {
+            const prices = data.stockPrices[companyId];
+            if (!prices || prices.length < 2) return null;
+            const si = findNearestTradingDay(prices, start, 'after');
+            const ei = findNearestTradingDay(prices, end, 'before');
+            if (si < 0 || ei < 0 || si >= ei) return null;
+            let peak = prices[si].close;
+            let maxDrawdown = 0;
+            for (let i = si; i <= ei; i++) {
+                if (prices[i].close > peak) peak = prices[i].close;
+                const dd = (prices[i].close - peak) / peak * 100;
+                if (dd < maxDrawdown) maxDrawdown = dd;
+            }
+            return maxDrawdown;
+        }
+
+        function calcDistribution(companyId, lookbackMonths) {
+            const prices = data.stockPrices[companyId];
+            if (!prices || prices.length === 0) return null;
+            const cutoff = new Date();
+            cutoff.setMonth(cutoff.getMonth() - lookbackMonths);
+            const si = findNearestTradingDay(prices, cutoff, 'after');
+            if (si < 0) return null;
+            const subset = prices.slice(si);
+            if (subset.length < 20) return null;
+            const holdingDays = 20;
+            const returns = [];
+            for (let i = 0; i <= subset.length - holdingDays; i++) {
+                const entry = subset[i].close;
+                const exit = subset[i + holdingDays - 1].close;
+                returns.push(((exit - entry) / entry) * 100);
+            }
+            if (returns.length === 0) return null;
+            returns.sort((a, b) => a - b);
+            const pct = p => returns[Math.floor(returns.length * p / 100)] || 0;
+            const positiveCount = returns.filter(r => r > 0).length;
+            return {
+                returns,
+                count: returns.length,
+                median: pct(50),
+                winRate: (positiveCount / returns.length) * 100,
+                maxLoss: returns[0],
+                p5: pct(5), p25: pct(25), p75: pct(75), p95: pct(95),
+                below10Pct: (returns.filter(r => r < -10).length / returns.length) * 100,
+                above5Pct: (returns.filter(r => r > 5).length / returns.length) * 100,
+                above10Pct: (returns.filter(r => r > 10).length / returns.length) * 100,
+                above15Pct: (returns.filter(r => r > 15).length / returns.length) * 100,
+                dataMonths: Math.round(subset.length / 20),
+                insufficientData: subset.length < lookbackMonths * 20,
+            };
+        }
+
+        function calcRecovery(companyId, lookbackMonths) {
+            const prices = data.stockPrices[companyId];
+            if (!prices || prices.length === 0) return null;
+            const cutoff = new Date();
+            cutoff.setMonth(cutoff.getMonth() - lookbackMonths);
+            const si = findNearestTradingDay(prices, cutoff, 'after');
+            if (si < 0) return null;
+            const subset = prices.slice(si);
+            if (subset.length < 20) return null;
+            const holdingDays = 20;
+            const recoveryDays = [];
+            let noRecoveryCount = 0;
+            let drawdownCount = 0;
+            for (let i = 0; i <= subset.length - holdingDays; i++) {
+                const entryPrice = subset[i].close;
+                let troughIdx = i;
+                for (let j = i + 1; j < i + holdingDays; j++) {
+                    if (subset[j].close < subset[troughIdx].close) troughIdx = j;
+                }
+                if (subset[troughIdx].close >= entryPrice) continue;
+                drawdownCount++;
+                if (troughIdx === i + holdingDays - 1) { noRecoveryCount++; continue; }
+                let recovered = false;
+                for (let j = troughIdx + 1; j < i + holdingDays; j++) {
+                    if (subset[j].close >= entryPrice) {
+                        recoveryDays.push(j - troughIdx);
+                        recovered = true;
+                        break;
+                    }
+                }
+                if (!recovered) noRecoveryCount++;
+            }
+            if (drawdownCount === 0) return { avg: 0, median: 0, noRecoveryPct: 0 };
+            recoveryDays.sort((a, b) => a - b);
+            const avg = recoveryDays.length > 0 ? recoveryDays.reduce((s, v) => s + v, 0) / recoveryDays.length : 0;
+            const median = recoveryDays.length > 0 ? recoveryDays[Math.floor(recoveryDays.length / 2)] : 0;
+            return { avg: Math.round(avg), median, noRecoveryPct: Math.round((noRecoveryCount / drawdownCount) * 100) };
+        }
+
+        function calcFundFlow(etfId, start, end) {
+            const prices = data.stockPrices[etfId];
+            if (!prices || prices.length < 2) return [];
+            const si = findNearestTradingDay(prices, start, 'after');
+            const ei = findNearestTradingDay(prices, end, 'before');
+            if (si < 0 || ei < 0 || si >= ei) return [];
+            const flows = [];
+            for (let i = Math.max(si, 1); i <= ei; i++) {
+                const closeChange = prices[i].close - prices[i - 1].close;
+                flows.push({
+                    date: prices[i].date,
+                    flow: closeChange * prices[i].volume,
+                    volume: prices[i].volume,
+                    changePct: (closeChange / prices[i - 1].close) * 100,
+                });
+            }
+            return flows;
+        }
+
+        async function ensureFinancialsHistory() {
+            if (data.financialsHistory) return data.financialsHistory;
+            try {
+                const resp = await fetch('data/financials_history.json');
+                if (resp.ok) data.financialsHistory = await resp.json();
+            } catch (e) {}
+            return data.financialsHistory || null;
+        }
+
+        async function ensureHoldersHistory() {
+            if (data.holdersHistory) return data.holdersHistory;
+            try {
+                const resp = await fetch('data/holders_history.json');
+                if (resp.ok) data.holdersHistory = await resp.json();
+            } catch (e) {}
+            return data.holdersHistory || null;
+        }
+
+        function getFinancialsTimeline(companyId) {
+            if (!data.financialsHistory?.companies?.[companyId]) return null;
+            return data.financialsHistory.companies[companyId];
+        }
+
+        const ETF_LINKS = {
+            etf_smh: { name: 'SMH', url: 'https://www.vaneck.com/us/en/investments/semiconductor-etf-smh/' },
+            etf_soxx: { name: 'SOXX', url: 'https://www.ishares.com/us/products/239705/' },
+            etf_soxq: { name: 'SOXQ', url: 'https://www.invesco.com/us/financial-products/etfs/product-detail?audienceType=Investor&ticker=SOXQ' },
+        };
+
+        function updateHeaderETF() {
+            const container = document.getElementById('etf-header');
+            if (!container) return;
+            const etfIds = ['etf_smh', 'etf_soxx', 'etf_soxq'];
+            let html = '';
+            etfIds.forEach(etfId => {
+                const prices = data.stockPrices[etfId];
+                if (!prices || prices.length < 2) return;
+                const ei = findNearestTradingDay(prices, state.timeRange[1], 'before');
+                if (ei < 0) return;
+                const latestPrice = prices[ei].close;
+                const ret = calcReturn(etfId, state.timeRange[0], state.timeRange[1]);
+                if (ret === null) return;
+                const color = ret >= 0 ? 'var(--hex-pass, #1e8050)' : 'var(--hex-critical, #c93135)';
+                const sign = ret >= 0 ? '+' : '';
+                const info = ETF_LINKS[etfId];
+                html += `<span><a href="${info.url}" target="_blank" rel="noopener" class="company-link" style="font-weight:600;">${info.name}</a> ${latestPrice.toFixed(2)} <span style="color:${color}">${sign}${ret.toFixed(1)}%</span></span>`;
+            });
+            container.innerHTML = html;
+        }
+
+        let companyMap = {};
+
+        function companyLink(companyId, displayName) {
+            const url = companyMap[companyId]?.ir_url;
+            if (!url) return displayName;
+            return `<a href="${url}" target="_blank" rel="noopener" class="company-link">${displayName}</a>`;
+        }
+
         // ===== Colors =====
+        // OKLCH design tokens (hex fallback for JS/canvas)
         const positionColor = {
-            upstream: "#d97706",   // 橘色 - 上游
-            midstream: "#2563eb",  // 藍色 - 中游
-            downstream: "#059669"  // 綠色 - 下游
+            upstream: "#b86a2a",   // oklch(0.55 0.16 55) 橘系
+            midstream: "#2a6bb8",  // oklch(0.52 0.13 240) 藍系
+            downstream: "#1e8050"  // oklch(0.48 0.16 150) 綠系
         };
 
         // 依位置產生同色系顏色
@@ -1206,7 +1570,14 @@
             const el = document.getElementById("selected-company");
             if (state.selectedCompany) {
                 const company = data.companies.find(c => c.id === state.selectedCompany);
-                el.textContent = `${company.short_name || company.name}（${company.role}）`;
+                const ret = calcReturn(state.selectedCompany, state.timeRange[0], state.timeRange[1]);
+                const mdd = calcMDD(state.selectedCompany, state.timeRange[0], state.timeRange[1]);
+                const retStr = ret !== null ? `${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%` : 'N/A';
+                const mddStr = mdd !== null ? `${mdd.toFixed(1)}%` : 'N/A';
+                el.innerHTML = `${companyLink(state.selectedCompany, company.short_name || company.name)}（${company.role}）` +
+                    `<span style="margin-left:8px; font-size:0.85em; color:${ret !== null && ret >= 0 ? '#1e8050' : '#c93135'}">` +
+                    `Return ${retStr}</span>` +
+                    `<span style="margin-left:6px; font-size:0.85em; color:#c93135">MDD ${mddStr}</span>`;
             } else if (state.selectedEvent) {
                 el.textContent = `事件：${state.selectedEvent.title.substring(0, 25)}...`;
             } else {
@@ -1282,6 +1653,9 @@
             updateHighlight();
             updateStockChart();
             updateEventTimeline();
+            const view = document.querySelector('#stock-tabs .tab.active')?.dataset.view;
+            if (view === 'backtest') renderBacktest();
+            if (view === 'distribution') renderDistribution();
         };
 
         // ===== Time Brush =====
@@ -1312,6 +1686,9 @@
                         state.timeRange = event.selection.map(x.invert);
                         updateStockChart();
                         updateEventTimeline();
+                        if (event.type === 'end') {
+                            onBrushEnd();
+                        }
                     }
                 });
 
@@ -1320,6 +1697,46 @@
                 .attr("class", "brush")
                 .call(brush)
                 .call(brush.move, [x(state.timeRange[0]), x(state.timeRange[1])]);
+        }
+
+        function onBrushEnd() {
+            state.smhReturn = calcReturn('etf_smh', state.timeRange[0], state.timeRange[1]);
+            updateHeaderETF();
+            const view = document.querySelector('#stock-tabs .tab.active')?.dataset.view;
+            if (view === 'heatmap') renderHeatmap();
+            if (view === 'fundflow') renderFundFlow();
+            if (view === 'backtest' && typeof renderBacktest === 'function') renderBacktest();
+            renderSupplyChainColors();
+        }
+
+        function renderSupplyChainColors() {
+            const svg = d3.select("#chain-svg");
+            function scColor(pct) {
+                const clamped = Math.max(-5, Math.min(5, pct));
+                const t = (clamped + 5) / 10;
+                if (t < 0.5) {
+                    const f = t * 2;
+                    const r = Math.round(201 + f * (223 - 201));
+                    const g = Math.round(49 + f * (224 - 49));
+                    const b = Math.round(53 + f * (229 - 53));
+                    return `rgb(${r},${g},${b})`;
+                } else {
+                    const f = (t - 0.5) * 2;
+                    const r = Math.round(223 - f * (223 - 30));
+                    const g = Math.round(224 - f * (224 - 128));
+                    const b = Math.round(229 - f * (229 - 80));
+                    return `rgb(${r},${g},${b})`;
+                }
+            }
+            svg.selectAll(".node").each(function(d) {
+                const ret = calcReturn(d.id, state.timeRange[0], state.timeRange[1]);
+                const circle = d3.select(this).select("circle");
+                if (ret === null) {
+                    circle.attr("fill", "#888");
+                } else {
+                    circle.attr("fill", scColor(ret));
+                }
+            });
         }
 
         // ===== Stock Chart =====
@@ -1366,6 +1783,19 @@
                     }));
                 }
             });
+
+            // SMH baseline normalization
+            const smhPrices = data.stockPrices['etf_smh']?.filter(d =>
+                d.date >= state.timeRange[0] && d.date <= state.timeRange[1]
+            ) || [];
+            if (smhPrices.length >= 2) {
+                const smhBase = smhPrices[0].close;
+                normalized['etf_smh'] = smhPrices.map(d => ({
+                    date: d.date,
+                    value: (d.close / smhBase) * 100,
+                    raw: d.close
+                }));
+            }
 
             if (Object.keys(normalized).length === 0) return;
 
@@ -1426,7 +1856,32 @@
                     .text(`${company?.short_name || company?.name || companyId} ${lastPoint.value.toFixed(0)}`);
             });
 
+            // SMH dashed baseline
+            if (normalized['etf_smh']) {
+                const smhLine = d3.line().x(d => x(d.date)).y(d => y(d.value));
+                svg.append("path")
+                    .datum(normalized['etf_smh'])
+                    .attr("fill", "none")
+                    .attr("stroke", "#999")
+                    .attr("stroke-width", 1.5)
+                    .attr("stroke-dasharray", "4,3")
+                    .attr("d", smhLine);
+            }
+
             updateStockLegend(visibleCompanies);
+
+            // SMH legend item
+            if (normalized['etf_smh']) {
+                const legend = d3.select("#stock-legend");
+                const smhLegendItem = legend.append("div").attr("class", "legend-item");
+                smhLegendItem.append("div")
+                    .attr("class", "legend-dot")
+                    .style("background", "none")
+                    .style("width", "16px")
+                    .style("height", "0")
+                    .style("border-top", "2px dashed #999");
+                smhLegendItem.append("span").text("SMH");
+            }
         }
 
         function updateStockLegend(companies) {
@@ -1520,12 +1975,15 @@
                     updateHighlight();
                     updateStockChart();
                     updateEventTimeline();
+                    const view = document.querySelector('#stock-tabs .tab.active')?.dataset.view;
+                    if (view === 'backtest') renderBacktest();
+                    if (view === 'distribution') renderDistribution();
                 })
                 .on("mouseenter", (event, d) => {
                     const relatedCount = data.links.filter(l => l.source === d.id || l.target === d.id).length;
                     const eventCount = data.events.filter(e => e.companies.includes(d.id)).length;
                     showTooltip(
-                        `<strong>${d.name}</strong><br>
+                        `<strong>${companyLink(d.id, d.name)}</strong><br>
                          ${d.role}<br>
                          <span style="color:#888">關聯：${relatedCount} 家</span><br>
                          <span style="color:#888">事件：${eventCount} 則</span>`,
@@ -1721,6 +2179,7 @@
             updateStockChart();
             updateEventTimeline();
             clearEventDetail();
+            onBrushEnd();
         });
 
         // ===== Init =====
@@ -1728,6 +2187,7 @@
             renderTimeBrush();
             updateStockChart();
             renderSupplyChain();
+            renderSupplyChainColors();
             updateEventTimeline();
             updateSelectedInfo();
             renderReports();
@@ -1736,29 +2196,26 @@
             document.getElementById('date-prev').addEventListener('click', () => navigateReport(1));
             document.getElementById('date-next').addEventListener('click', () => navigateReport(-1));
 
-            // 股價面板 tab 切換（走勢圖 / 熱力圖）
+            // 股價面板 tab 切換
             document.querySelectorAll('#stock-tabs .tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('#stock-tabs .tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     const view = tab.dataset.view;
-                    document.getElementById('stock-trend-view').style.display = view === 'trend' ? 'block' : 'none';
-                    document.getElementById('stock-heatmap-view').style.display = view === 'heatmap' ? 'block' : 'none';
+                    ['trend', 'heatmap', 'fundflow', 'holders', 'backtest', 'distribution'].forEach(v => {
+                        const el = document.getElementById('stock-' + v + '-view');
+                        if (el) el.style.display = v === view ? 'block' : 'none';
+                    });
+                    updateRangeButtons(view);
                     if (view === 'heatmap') renderHeatmap();
                     if (view === 'trend') updateStockChartByRange();
+                    if (view === 'fundflow') renderFundFlow();
+                    if (view === 'holders') renderHolders();
+                    if (view === 'backtest') renderBacktest();
+                    if (view === 'distribution') renderDistribution();
                 });
             });
 
-            // 日/週/月 切換（影響走勢圖和熱力圖）
-            document.querySelectorAll('#stock-range .tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('#stock-range .tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    const currentView = document.querySelector('#stock-tabs .tab.active')?.dataset.view;
-                    if (currentView === 'heatmap') renderHeatmap();
-                    else updateStockChartByRange();
-                });
-            });
 
             // 返回報告按鈕
             document.getElementById('back-to-reports').addEventListener('click', () => {
@@ -1771,8 +2228,11 @@
                 renderTimeBrush();
                 updateStockChart();
                 renderSupplyChain();
+                renderSupplyChainColors();
                 updateEventTimeline();
             });
+
+            updateRangeButtons('trend');
         }
 
         // ===== 報告視圖 =====
@@ -2052,7 +2512,7 @@
                 return 'flat';
             }
 
-            // 只顯示有 alert 的 + 按應收帳款變化排序的前 10 家
+            // 只顯示有 alert 的 + 按 AR 變化排序的前 10 家
             const sorted = [...fin.data]
                 .filter(c => c.ar_qoq !== 'N/A' || c.inv_qoq !== 'N/A')
                 .sort((a, b) => {
@@ -2067,9 +2527,9 @@
             let html = `<div class="financial-quarter">${fin.quarter}</div>`;
             html += sorted.map(c => `
                 <div class="financial-row${c.alert ? ' alert' : ''}">
-                    <span class="financial-name">${c.name}</span>
+                    <span class="financial-name">${companyLink(c.id || c.company, c.name)}</span>
                     <span class="financial-metric">
-                        <span class="financial-label">AR</span>
+                        <span class="financial-label">應收</span>
                         <span class="financial-change ${changeClass(c.ar_qoq)}">${c.ar_qoq}</span>
                     </span>
                     <span class="financial-metric">
@@ -2079,7 +2539,226 @@
                 </div>
             `).join('');
             container.innerHTML = html;
+
+            // Add sparklines if history data is available
+            ensureFinancialsHistory().then(finHistory => {
+                if (!finHistory?.companies) return;
+                // Prevent infinite re-render loop
+                const section = document.getElementById('financials-section');
+                if (section.querySelector('.fin-sparklines')) return;
+
+                const sparkDiv = document.createElement('div');
+                sparkDiv.className = 'fin-sparklines';
+                sparkDiv.style.marginTop = '8px';
+
+                Object.entries(finHistory.companies).forEach(([cid, cdata]) => {
+                    if (!cdata.quarters || cdata.quarters.length < 2) return;
+                    const quarters = cdata.quarters.slice(-6);
+                    const company = data.companies.find(c => c.id === cid);
+                    const name = company?.short_name || company?.name || cid;
+
+                    const sparkW = 60, sparkH = 20;
+                    function miniSpark(values) {
+                        const filtered = values.filter(v => v != null);
+                        if (filtered.length < 2) return '';
+                        const min = Math.min(...filtered), max = Math.max(...filtered);
+                        const range = max - min || 1;
+                        const points = filtered.map((v, i) =>
+                            `${(i / (filtered.length - 1)) * sparkW},${sparkH - ((v - min) / range) * sparkH}`
+                        ).join(' ');
+                        return `<svg width="${sparkW}" height="${sparkH}" style="vertical-align:middle;">
+                            <polyline points="${points}" fill="none" stroke="var(--hex-brand,#3b82f6)" stroke-width="1.5"/>
+                        </svg>`;
+                    }
+
+                    sparkDiv.innerHTML += `<div style="display:flex; align-items:center; gap:8px; font-size:0.7rem; margin-bottom:2px;">
+                        <span style="width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${companyLink(cid, name)}</span>
+                        <span style="color:#888;">AR</span>${miniSpark(quarters.map(q => q.ar))}
+                        <span style="color:#888;">庫存</span>${miniSpark(quarters.map(q => q.inventory))}
+                    </div>`;
+                });
+
+                if (sparkDiv.innerHTML) {
+                    const container = document.getElementById('financials-container');
+                    container.appendChild(sparkDiv);
+                }
+            });
         }
+
+
+        // ===== Fund Flow =====
+        function renderFundFlow() {
+            const etfIds = ['etf_smh', 'etf_soxx', 'etf_soxq'];
+            const etfNames = { etf_smh: 'SMH', etf_soxx: 'SOXX', etf_soxq: 'SOXQ' };
+            const hasAnyETF = etfIds.some(id => data.stockPrices[id]?.length > 1);
+
+            if (!hasAnyETF) {
+                document.getElementById('etf-cards').innerHTML = '<div style="color:#999; text-align:center; padding:40px;">暫無資金流向資料</div>';
+                return;
+            }
+
+            const selectedETF = state.selectedETF || etfIds.find(id => data.stockPrices[id]) || etfIds[0];
+            state.selectedETF = selectedETF;
+
+            const cardsHtml = etfIds.filter(id => data.stockPrices[id]).map(etfId => {
+                const flows = calcFundFlow(etfId, state.timeRange[0], state.timeRange[1]);
+                const prices = data.stockPrices[etfId];
+                const latestPrice = prices?.[prices.length - 1]?.close || 0;
+                const dailyChg = flows.length > 0 ? flows[flows.length - 1].changePct : 0;
+                const flow5d = flows.slice(-5).reduce((s, f) => s + f.flow, 0);
+                const flowTrend = flow5d > 0 ? 'inflow' : flow5d < 0 ? 'outflow' : 'neutral';
+                const flowLabel = flowTrend === 'inflow' ? '▲ 流入' : flowTrend === 'outflow' ? '▼ 流出' : '— 持平';
+                const ticker = etfNames[etfId] || etfId;
+                return `<div class="etf-card${etfId === selectedETF ? ' active' : ''}" onclick="selectETF('${etfId}')">
+                    <div class="etf-name">${ticker}</div>
+                    <div class="etf-price">${latestPrice.toFixed(2)}</div>
+                    <span class="etf-change ${dailyChg >= 0 ? 'up' : 'down'}">${dailyChg >= 0 ? '+' : ''}${dailyChg.toFixed(2)}%</span>
+                    <div class="etf-flow ${flowTrend === 'inflow' ? 'inflow' : 'outflow'}">${flowLabel} 5D: ${(flow5d / 1e6).toFixed(0)}M</div>
+                </div>`;
+            }).join('');
+            document.getElementById('etf-cards').innerHTML = cardsHtml;
+
+            const flowData = calcFundFlow(selectedETF, state.timeRange[0], state.timeRange[1]);
+            if (flowData.length === 0) return;
+
+            const svg = d3.select('#fundflow-svg');
+            svg.selectAll('*').remove();
+            const container = document.getElementById('stock-chart');
+            const width = container.clientWidth - 30;
+            const height = 320;
+            svg.attr('width', width).attr('height', height);
+
+            const margin = { top: 10, right: 15, bottom: 30, left: 50 };
+            const x = d3.scaleTime()
+                .domain(d3.extent(flowData, d => d.date))
+                .range([margin.left, width - margin.right]);
+            const maxAbs = d3.max(flowData, d => Math.abs(d.flow));
+            const y = d3.scaleLinear()
+                .domain([-maxAbs, maxAbs]).nice()
+                .range([height - margin.bottom, margin.top]);
+            const barWidth = Math.max(1, (width - margin.left - margin.right) / flowData.length - 1);
+
+            svg.append('line')
+                .attr('x1', margin.left).attr('x2', width - margin.right)
+                .attr('y1', y(0)).attr('y2', y(0))
+                .attr('stroke', '#ccc').attr('stroke-dasharray', '3,3');
+
+            svg.selectAll('rect').data(flowData).enter().append('rect')
+                .attr('x', d => x(d.date) - barWidth / 2)
+                .attr('width', barWidth)
+                .attr('y', d => d.flow >= 0 ? y(d.flow) : y(0))
+                .attr('height', d => Math.abs(y(d.flow) - y(0)))
+                .attr('fill', d => d.flow >= 0 ? 'var(--hex-pass, #1e8050)' : 'var(--hex-critical, #c93135)')
+                .attr('rx', 1).attr('opacity', 0.8);
+
+            svg.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat('%m/%d')));
+
+            svg.append('g').attr('class', 'axis')
+                .attr('transform', `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).ticks(5).tickFormat(d => {
+                    const abs = Math.abs(d);
+                    if (abs >= 1e9) return (d / 1e9).toFixed(1) + 'B';
+                    if (abs >= 1e6) return (d / 1e6).toFixed(0) + 'M';
+                    if (abs >= 1e3) return (d / 1e3).toFixed(0) + 'K';
+                    return d;
+                }));
+        }
+
+        window.selectETF = function(etfId) {
+            state.selectedETF = etfId;
+            renderFundFlow();
+        };
+
+        // ===== Holders =====
+        function renderHolders() {
+            const holdersData = data.holders;
+            if (!holdersData?.companies || Object.keys(holdersData.companies).length === 0) {
+                document.getElementById('holders-company-select').innerHTML = '';
+                document.getElementById('holders-table-container').innerHTML = '<div style="color:#999; text-align:center; padding:40px;">暫無持倉資料</div>';
+                return;
+            }
+
+            const companies = holdersData.companies;
+            const ids = Object.keys(companies).sort();
+            const selected = state.selectedHolderCompany || ids[0];
+            state.selectedHolderCompany = selected;
+
+            // Company chips
+            const chipsHtml = ids.map(id => {
+                const c = companies[id];
+                const name = c.short_name || c.name || id;
+                return `<div class="holder-chip${id === selected ? ' active' : ''}" onclick="selectHolderCompany('${id}')">${companyLink(id, name)}</div>`;
+            }).join('');
+            document.getElementById('holders-company-select').innerHTML = chipsHtml;
+
+            // Holders table
+            const company = companies[selected];
+            if (!company?.holders?.length) {
+                document.getElementById('holders-table-container').innerHTML = '<div style="color:#999; text-align:center; padding:20px;">無持倉資料</div>';
+                return;
+            }
+
+            const fmtNum = n => {
+                if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+                if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+                if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+                return n?.toLocaleString() || 'N/A';
+            };
+
+            let tableHtml = `<div style="font-size:0.75rem; color:#888; margin-bottom:6px;">${company.name} (${company.ticker})</div>`;
+            tableHtml += `<table class="holders-table">
+                <thead><tr><th>#</th><th>持股機構</th><th>股數</th><th>佔比</th><th>市值</th></tr></thead>
+                <tbody>`;
+            company.holders.forEach((h, i) => {
+                tableHtml += `<tr>
+                    <td>${i + 1}</td>
+                    <td style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${h.holder}">${h.holder}</td>
+                    <td>${fmtNum(h.shares)}</td>
+                    <td>${h.pct_held?.toFixed(2) || 'N/A'}%</td>
+                    <td>$${fmtNum(h.value)}</td>
+                </tr>`;
+            });
+            tableHtml += '</tbody></table>';
+            document.getElementById('holders-table-container').innerHTML = tableHtml;
+
+            // Holders history sparkline
+            ensureHoldersHistory().then(holdersHistory => {
+                const selected = state.selectedHolderCompany;
+                if (!holdersHistory?.companies?.[selected]) return;
+                const snapshots = holdersHistory.companies[selected];
+                if (snapshots.length < 2) return;
+
+                // Prevent duplicate sparklines
+                const existing = document.querySelector('.holders-sparkline');
+                if (existing) existing.remove();
+
+                const pcts = snapshots.map(s => s.total_institutional_pct);
+                const sparkW = 100, sparkH = 24;
+                const min = Math.min(...pcts), max = Math.max(...pcts);
+                const range = max - min || 1;
+                const points = pcts.map((v, i) =>
+                    `${(i / (pcts.length - 1)) * sparkW},${sparkH - ((v - min) / range) * sparkH}`
+                ).join(' ');
+                const latest = pcts[pcts.length - 1];
+
+                const sparkHtml = `<div class="holders-sparkline" style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.75rem; color:#888;">
+                    機構持股比例趨勢: ${latest.toFixed(1)}%
+                    <svg width="${sparkW}" height="${sparkH}" style="vertical-align:middle;">
+                        <polyline points="${points}" fill="none" stroke="var(--hex-brand,#3b82f6)" stroke-width="1.5"/>
+                    </svg>
+                </div>`;
+
+                const tableContainer = document.getElementById('holders-table-container');
+                tableContainer.insertAdjacentHTML('beforebegin', sparkHtml);
+            });
+        }
+
+        window.selectHolderCompany = function(id) {
+            state.selectedHolderCompany = id;
+            renderHolders();
+        };
 
         function renderWeeklyLLM() {
             const section = document.getElementById('weekly-llm-section');
@@ -2104,6 +2783,398 @@
             container.innerHTML = html;
         }
 
+        function updateRangeButtons(view) {
+            const container = document.getElementById('stock-range');
+            let buttons = '';
+            if (view === 'trend' || view === 'heatmap') {
+                buttons = '<div class="tab" data-range="1">日</div><div class="tab" data-range="5">週</div><div class="tab active" data-range="20">月</div>';
+            } else if (view === 'backtest') {
+                buttons = '<div class="tab" data-range="20">1M</div><div class="tab active" data-range="60">3M</div><div class="tab" data-range="120">6M</div><div class="tab" data-range="250">1Y</div>';
+            } else if (view === 'distribution') {
+                buttons = '<div class="tab" data-range="6">6M</div><div class="tab active" data-range="12">12M</div><div class="tab" data-range="24">24M</div>';
+            }
+            container.innerHTML = buttons;
+
+            container.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const range = parseInt(tab.dataset.range);
+                    if (view === 'trend' || view === 'heatmap') {
+                        updateStockChartByRange();
+                    } else if (view === 'backtest') {
+                        const now = state.fullTimeRange[1] || new Date();
+                        const msPerDay = 24 * 60 * 60 * 1000;
+                        const start = new Date(now.getTime() - range * msPerDay);
+                        state.timeRange = [d3.max([start, state.fullTimeRange[0]]), now];
+                        renderTimeBrush();
+                        updateStockChart();
+                        updateEventTimeline();
+                        renderBacktest();
+                        onBrushEnd();
+                    } else if (view === 'distribution') {
+                        renderDistribution();
+                    }
+                });
+            });
+        }
+
+        async function renderBacktest() {
+            const container = document.getElementById('backtest-container');
+
+            // 1. Check selectedCompany
+            if (!state.selectedCompany) {
+                container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">請點擊供應鏈節點或選擇公司</div>';
+                return;
+            }
+
+            const companyId = state.selectedCompany;
+            const company = data.companies.find(c => c.id === companyId);
+            const prices = data.stockPrices[companyId];
+
+            // 2. Check stock price data
+            if (!prices || prices.length < 2) {
+                container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">此公司無股價資料</div>';
+                return;
+            }
+
+            // 3. Calculate return and MDD
+            const [start, end] = state.timeRange;
+            const ret = calcReturn(companyId, start, end);
+            const mdd = calcMDD(companyId, start, end);
+            const smhRet = calcReturn('etf_smh', start, end);
+            const smhMdd = calcMDD('etf_smh', start, end);
+            const smhRetStr = smhRet !== null ? ` (SMH ${smhRet >= 0 ? '+' : ''}${smhRet.toFixed(1)}%)` : '';
+            const smhMddStr = smhMdd !== null ? ` (SMH ${smhMdd.toFixed(1)}%)` : '';
+            const isBold = ret !== null && smhRet !== null && ret > smhRet;
+
+            // 4. Filter prices to timeRange and draw chart
+            const si = findNearestTradingDay(prices, start, 'after');
+            const ei = findNearestTradingDay(prices, end, 'before');
+            if (si < 0 || ei < 0 || si >= ei) {
+                container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">此公司無股價資料</div>';
+                return;
+            }
+            const filtered = prices.slice(si, ei + 1);
+
+            const displayName = company?.short_name || company?.name || companyId;
+
+            // Build container HTML
+            container.innerHTML = `
+                <div style="font-size:0.85rem; font-weight:600; margin-bottom:4px; color:var(--fg, #1e2030);">${companyLink(companyId, displayName)}</div>
+                <svg id="backtest-svg"></svg>
+                <div id="backtest-summary" style="display:flex; gap:16px; justify-content:center; margin-top:6px; font-size:0.8rem;"></div>
+            `;
+
+            const chartEl = document.getElementById('stock-chart');
+            const width = chartEl.clientWidth - 30;
+            const height = 260;
+            const margin = { top: 15, right: 15, bottom: 25, left: 55 };
+
+            const svg = d3.select('#backtest-svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const x = d3.scaleTime()
+                .domain([filtered[0].date, filtered[filtered.length - 1].date])
+                .range([margin.left, width - margin.right]);
+
+            const y = d3.scaleLinear()
+                .domain([d3.min(filtered, d => d.close) * 0.98, d3.max(filtered, d => d.close) * 1.02])
+                .range([height - margin.bottom, margin.top]);
+
+            // X axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat('%Y/%m/%d')));
+
+            // Y axis
+            svg.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).ticks(5));
+
+            // Price line
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.close))
+                .curve(d3.curveMonotoneX);
+
+            svg.append('path')
+                .datum(filtered)
+                .attr('fill', 'none')
+                .attr('stroke', 'var(--hex-brand, #3b82f6)')
+                .attr('stroke-width', 1.8)
+                .attr('d', line);
+
+            // 5. Summary: return and MDD with color coding
+            const summaryEl = document.getElementById('backtest-summary');
+            const retColor = ret !== null && ret >= 0 ? 'var(--hex-pass, #1e8050)' : 'var(--hex-critical, #c93135)';
+            const mddColor = 'var(--hex-critical, #c93135)';
+            const retText = ret !== null ? `${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%` : 'N/A';
+            const mddText = mdd !== null ? `${mdd.toFixed(2)}%` : 'N/A';
+            const retStyle = isBold ? `color:${retColor}; font-weight:900` : `color:${retColor}`;
+            summaryEl.innerHTML = `
+                <span>報酬率：<strong style="${retStyle}">${retText}</strong><span style="color:#888">${smhRetStr}</span></span>
+                <span>MDD：<strong style="color:${mddColor}">${mddText}</strong><span style="color:#888">${smhMddStr}</span></span>
+            `;
+
+            // 7. Trigger lazy load of financials history, then overlay markers
+            const fh = await ensureFinancialsHistory();
+
+            // 6. Overlay fundamental markers
+            if (fh) {
+                const timeline = getFinancialsTimeline(companyId);
+                if (timeline && timeline.quarters && timeline.quarters.length > 1) {
+                    const quarters = timeline.quarters;
+
+                    // Helper to format large numbers as xB
+                    function fmtB(val) {
+                        if (val == null) return 'N/A';
+                        return (val / 1e9).toFixed(1) + 'B';
+                    }
+
+                    // Helper to calculate QoQ%
+                    function qoq(curr, prev) {
+                        if (prev == null || prev === 0) return null;
+                        return ((curr - prev) / Math.abs(prev)) * 100;
+                    }
+
+                    quarters.forEach((q, idx) => {
+                        const qDate = new Date(q.quarter);
+                        // Only show markers within timeRange
+                        if (qDate < start || qDate > end) return;
+                        // Check if this date is within chart x domain
+                        if (qDate < filtered[0].date || qDate > filtered[filtered.length - 1].date) return;
+
+                        // Find nearest price for y position
+                        const pi = findNearestTradingDay(prices, qDate, 'before');
+                        if (pi < 0) return;
+                        const priceAtQ = prices[pi].close;
+
+                        // Calculate QoQ
+                        const prevQ = idx > 0 ? quarters[idx - 1] : null;
+                        const arQoQ = prevQ ? qoq(q.ar, prevQ.ar) : null;
+                        const invQoQ = prevQ ? qoq(q.inventory, prevQ.inventory) : null;
+
+                        // AR marker (yellow circle)
+                        if (q.ar != null) {
+                            const arTooltipHtml = `<strong>應收帳款 (AR)</strong><br>${fmtB(q.ar)}${arQoQ !== null ? `<br>QoQ: ${arQoQ >= 0 ? '+' : ''}${arQoQ.toFixed(1)}%` : ''}`;
+                            svg.append('circle')
+                                .attr('cx', x(qDate))
+                                .attr('cy', y(priceAtQ) - 12)
+                                .attr('r', 5)
+                                .attr('fill', '#eab308')
+                                .attr('stroke', '#a16207')
+                                .attr('stroke-width', 1)
+                                .style('cursor', 'pointer')
+                                .on('mouseenter', function(event) { showTooltip(arTooltipHtml, event); })
+                                .on('mouseleave', hideTooltip);
+                        }
+
+                        // Inventory marker (purple square)
+                        if (q.inventory != null) {
+                            const invTooltipHtml = `<strong>庫存 (Inventory)</strong><br>${fmtB(q.inventory)}${invQoQ !== null ? `<br>QoQ: ${invQoQ >= 0 ? '+' : ''}${invQoQ.toFixed(1)}%` : ''}`;
+                            svg.append('rect')
+                                .attr('x', x(qDate) - 5)
+                                .attr('y', y(priceAtQ) + 7)
+                                .attr('width', 10)
+                                .attr('height', 10)
+                                .attr('fill', '#a855f7')
+                                .attr('stroke', '#7e22ce')
+                                .attr('stroke-width', 1)
+                                .style('cursor', 'pointer')
+                                .on('mouseenter', function(event) { showTooltip(invTooltipHtml, event); })
+                                .on('mouseleave', hideTooltip);
+                        }
+                    });
+                }
+            }
+        }
+
+        function renderDistribution() {
+            const container = document.getElementById('distribution-container');
+            const companyId = state.selectedCompany;
+
+            // 1. No company selected
+            if (!companyId) {
+                container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">請點擊供應鏈節點或選擇公司</div>';
+                return;
+            }
+
+            // 2. Check stock price data
+            const prices = data.stockPrices[companyId];
+            if (!prices || prices.length < 20) {
+                container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">此公司無股價資料</div>';
+                return;
+            }
+
+            // 3. Get selected lookback months
+            const months = parseInt(document.querySelector('#stock-range .tab.active')?.dataset.range || '12');
+
+            // 4. Show loading indicator
+            container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">計算中...</div>';
+
+            // 5. Defer heavy computation
+            setTimeout(() => {
+                const dist = calcDistribution(companyId, months);
+                if (!dist) {
+                    container.innerHTML = '<div style="color:#999; text-align:center; padding:40px;">資料不足，需至少 20 個交易日</div>';
+                    return;
+                }
+                const recovery = calcRecovery(companyId, months);
+                const company = data.companies.find(c => c.id === companyId);
+                const companyName = company ? (company.short_name || company.name) : companyId;
+
+                // Build HTML
+                let html = '';
+
+                // Company name with insufficient data warning
+                html += '<div style="font-size:0.8rem; color:#666; margin-bottom:6px;">';
+                html += companyLink(companyId, companyName);
+                if (dist.insufficientData) {
+                    html += ' <span style="color:#e67e22;">⚠ 資料僅 ' + dist.dataMonths + ' 個月</span>';
+                }
+                html += '</div>';
+
+                // SVG placeholder for histogram
+                html += '<div id="dist-chart-wrapper"></div>';
+
+                // Stats grid
+                html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; font-size:0.78rem; margin-top:8px;">';
+
+                // Row 1: 中位數, 勝率
+                html += '<div>中位數: <b>' + dist.median.toFixed(2) + '%</b></div>';
+                const winColor = dist.winRate >= 50 ? '#1e8050' : '#c93135';
+                html += '<div>勝率: <b style="color:' + winColor + ';">' + dist.winRate.toFixed(1) + '%</b></div>';
+
+                // Row 2: 最大虧損, 95th percentile
+                html += '<div>最大虧損: <b style="color:#c93135;">' + dist.maxLoss.toFixed(2) + '%</b></div>';
+                html += '<div>95th: <b>' + dist.p95.toFixed(2) + '%</b></div>';
+
+                // Row 3: 跌>10%, 漲>10%
+                html += '<div>跌&gt;10%: <b>' + dist.below10Pct.toFixed(1) + '%</b></div>';
+                html += '<div>漲&gt;10%: <b>' + dist.above10Pct.toFixed(1) + '%</b></div>';
+
+                // Row 4: Recovery stats
+                if (recovery) {
+                    html += '<div>回撤恢復: <b>' + recovery.avg + '天</b> (中位 ' + recovery.median + '天)</div>';
+                    html += '<div>未恢復: <b>' + recovery.noRecoveryPct + '%</b></div>';
+                }
+
+                html += '</div>';
+
+                container.innerHTML = html;
+
+                // Draw histogram with D3
+                const chartWidth = document.getElementById('stock-chart').clientWidth - 30;
+                const chartHeight = 200;
+                const margin = { top: 10, right: 15, bottom: 25, left: 40 };
+                const width = chartWidth - margin.left - margin.right;
+                const height = chartHeight - margin.top - margin.bottom;
+
+                const svg = d3.select('#dist-chart-wrapper')
+                    .append('svg')
+                    .attr('id', 'dist-svg')
+                    .attr('width', chartWidth)
+                    .attr('height', chartHeight);
+
+                const g = svg.append('g')
+                    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+                // Create histogram bins with 2% bin width
+                const returns = dist.returns;
+                const minVal = Math.floor(d3.min(returns) / 2) * 2;
+                const maxVal = Math.ceil(d3.max(returns) / 2) * 2;
+                const thresholds = d3.range(minVal, maxVal + 2, 2);
+
+                const histogram = d3.histogram()
+                    .domain([minVal, maxVal + 2])
+                    .thresholds(thresholds);
+
+                const bins = histogram(returns);
+
+                // Scales
+                const x = d3.scaleLinear()
+                    .domain([minVal, maxVal + 2])
+                    .range([0, width]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(bins, d => d.length)])
+                    .nice()
+                    .range([height, 0]);
+
+                // Draw bars (green for positive, red for negative)
+                g.selectAll('rect')
+                    .data(bins)
+                    .enter()
+                    .append('rect')
+                    .attr('x', d => x(d.x0) + 1)
+                    .attr('y', d => y(d.length))
+                    .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+                    .attr('height', d => height - y(d.length))
+                    .attr('fill', d => {
+                        const midpoint = (d.x0 + d.x1) / 2;
+                        return midpoint >= 0 ? '#1e8050' : '#c93135';
+                    })
+                    .attr('opacity', 0.8);
+
+                // Zero line (dashed vertical)
+                if (minVal < 0 && maxVal + 2 > 0) {
+                    g.append('line')
+                        .attr('x1', x(0))
+                        .attr('x2', x(0))
+                        .attr('y1', 0)
+                        .attr('y2', height)
+                        .attr('stroke', '#333')
+                        .attr('stroke-width', 1)
+                        .attr('stroke-dasharray', '4,3');
+                }
+
+                // X-axis with percentile tick marks
+                const percentiles = [
+                    { p: dist.p5, label: '5th' },
+                    { p: dist.p25, label: '25th' },
+                    { p: dist.median, label: '50th' },
+                    { p: dist.p75, label: '75th' },
+                    { p: dist.p95, label: '95th' }
+                ];
+
+                const xAxis = g.append('g')
+                    .attr('transform', 'translate(0,' + height + ')');
+
+                // Draw percentile ticks
+                percentiles.forEach(pt => {
+                    const xPos = x(pt.p);
+                    if (xPos >= 0 && xPos <= width) {
+                        xAxis.append('line')
+                            .attr('x1', xPos)
+                            .attr('x2', xPos)
+                            .attr('y1', 0)
+                            .attr('y2', 5)
+                            .attr('stroke', '#333');
+
+                        xAxis.append('text')
+                            .attr('x', xPos)
+                            .attr('y', 16)
+                            .attr('text-anchor', 'middle')
+                            .attr('font-size', '9px')
+                            .attr('fill', '#666')
+                            .attr('font-weight', pt.label === '50th' ? 'bold' : 'normal')
+                            .text(pt.p.toFixed(1) + '%');
+                    }
+                });
+
+                // Y-axis
+                g.append('g')
+                    .call(d3.axisLeft(y).ticks(4))
+                    .selectAll('text')
+                    .attr('font-size', '9px');
+
+            }, 10);
+        }
+
         function updateStockChartByRange() {
             const days = parseInt(document.querySelector('#stock-range .tab.active')?.dataset.range || '20');
             const now = state.fullTimeRange[1] || new Date();
@@ -2117,7 +3188,6 @@
 
         function renderHeatmap() {
             const container = document.getElementById('heatmap-container');
-            const days = parseInt(document.querySelector('#stock-range .tab.active')?.dataset.range || '1');
 
             // 計算每家公司的漲跌幅
             const changes = [];
@@ -2125,11 +3195,11 @@
                 const prices = data.stockPrices[company.id];
                 if (!prices || prices.length < 2) return;
 
-                const latest = prices[prices.length - 1];
-                const lookback = Math.min(days, prices.length - 1);
-                const prev = prices[prices.length - 1 - lookback];
-                if (!latest || !prev || !prev.close || !latest.close) return;
-
+                const si = findNearestTradingDay(prices, state.timeRange[0], 'after');
+                const ei = findNearestTradingDay(prices, state.timeRange[1], 'before');
+                if (si < 0 || ei < 0 || si >= ei) return;
+                const prev = prices[si];
+                const latest = prices[ei];
                 const pct = ((latest.close - prev.close) / prev.close) * 100;
                 changes.push({
                     id: company.id,
@@ -2154,16 +3224,23 @@
             ];
 
             // 計算色塊顏色
+            // OKLCH-aligned heatmap colors (hex fallback)
+            // critical=#c93135 (hue 25), neutral=#dfe0e5, pass=#1e8050 (hue 150)
             function changeColor(pct) {
                 const clamped = Math.max(-5, Math.min(5, pct));
-                const t = (clamped + 5) / 10; // 0=deep red, 0.5=gray, 1=deep green
+                const t = (clamped + 5) / 10; // 0=critical red, 0.5=neutral, 1=pass green
                 if (t < 0.5) {
-                    const r = 220, g = Math.round(60 + t * 2 * 140), b = Math.round(60 + t * 2 * 140);
-                    return { bg: `rgb(${r},${g},${b})`, text: '#fff' };
+                    const f = t * 2; // 0→1
+                    const r = Math.round(201 + f * (223 - 201));
+                    const g = Math.round(49 + f * (224 - 49));
+                    const b = Math.round(53 + f * (229 - 53));
+                    return { bg: `rgb(${r},${g},${b})`, text: f < 0.5 ? '#fff' : '#1e2030' };
                 } else {
-                    const factor = (t - 0.5) * 2;
-                    const r = Math.round(200 - factor * 160), g = Math.round(200 + factor * 30), b = Math.round(200 - factor * 140);
-                    return { bg: `rgb(${r},${g},${b})`, text: factor > 0.3 ? '#fff' : '#333' };
+                    const f = (t - 0.5) * 2; // 0→1
+                    const r = Math.round(223 - f * (223 - 30));
+                    const g = Math.round(224 - f * (224 - 128));
+                    const b = Math.round(229 - f * (229 - 80));
+                    return { bg: `rgb(${r},${g},${b})`, text: f > 0.4 ? '#fff' : '#1e2030' };
                 }
             }
 
@@ -2180,10 +3257,7 @@
                     const { bg, text } = changeColor(item.change);
                     const sign = item.change >= 0 ? '+' : '';
                     html += `
-                        <div class="heatmap-cell" style="background:${bg}; color:${text};"
-                             onmouseenter="showTooltip('<strong>${item.name}</strong><br>${item.role}<br>漲跌：${sign}${item.change.toFixed(2)}%', event)"
-                             onmouseleave="hideTooltip()"
-                             onclick="selectCompany('${item.id}')">
+                        <div class="heatmap-cell" data-id="${item.id}" data-name="${item.name}" data-role="${item.role}" data-change="${item.change.toFixed(2)}" style="background:${bg}; color:${text};">
                             <span class="heatmap-name">${item.name}</span>
                             <span class="heatmap-value">${sign}${item.change.toFixed(1)}%</span>
                         </div>`;
@@ -2192,6 +3266,27 @@
             });
 
             container.innerHTML = html;
+
+            container.querySelectorAll('.heatmap-cell').forEach(cell => {
+                const id = cell.dataset.id;
+                const name = cell.dataset.name;
+                const role = cell.dataset.role;
+                const change = parseFloat(cell.dataset.change);
+                const sign = change >= 0 ? '+' : '';
+
+                cell.addEventListener('mouseenter', (event) => {
+                    let tip = `<strong>${companyLink(id, name)}</strong><br>${role}<br>漲跌：${sign}${change.toFixed(2)}%`;
+                    if (state.smhReturn !== null) {
+                        const excess = change - state.smhReturn;
+                        const exSign = excess >= 0 ? '+' : '';
+                        const exColor = excess >= 0 ? 'var(--hex-pass, #1e8050)' : 'var(--hex-critical, #c93135)';
+                        tip += `<br>vs SMH：${state.smhReturn >= 0 ? '+' : ''}${state.smhReturn.toFixed(2)}%（<span style="color:${exColor}">超額 ${exSign}${excess.toFixed(2)}%</span>）`;
+                    }
+                    showTooltip(tip, event);
+                });
+                cell.addEventListener('mouseleave', () => hideTooltip());
+                cell.addEventListener('click', () => selectCompany(id));
+            });
         }
 
         // Start
@@ -2208,30 +3303,30 @@
 
             <div id="feedback-step1">
                 <p style="color: #666; margin-bottom: 16px;">點擊下方按鈕擷取目前畫面，或直接輸入意見</p>
-                <button onclick="captureScreen()" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-bottom: 16px;">📷 擷取畫面截圖</button>
+                <button onclick="captureScreen()" style="width: 100%; padding: 12px; background: var(--color-brand, #3b82f6); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-bottom: 16px;">📷 擷取畫面截圖</button>
             </div>
 
             <div id="feedback-screenshot" style="display: none; margin-bottom: 16px;">
                 <p style="color: #666; margin-bottom: 8px;">截圖預覽（可在上面圈選標記）：</p>
-                <div style="position: relative; border: 1px solid #e0e4e8; border-radius: 8px; overflow: hidden;">
+                <div style="position: relative; border: 1px solid var(--border-subtle, #d5d6da); border-radius: 8px; overflow: hidden;">
                     <canvas id="feedback-canvas" style="width: 100%; cursor: crosshair;"></canvas>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button onclick="clearDrawing()" style="padding: 8px 16px; background: #f0f2f5; border: 1px solid #e0e4e8; border-radius: 6px; cursor: pointer;">清除標記</button>
-                    <button onclick="retakeScreenshot()" style="padding: 8px 16px; background: #f0f2f5; border: 1px solid #e0e4e8; border-radius: 6px; cursor: pointer;">重新截圖</button>
+                    <button onclick="clearDrawing()" style="padding: 8px 16px; background: var(--bg-muted, #f0f2f5); border: 1px solid var(--border-subtle, #d5d6da); border-radius: 6px; cursor: pointer;">清除標記</button>
+                    <button onclick="retakeScreenshot()" style="padding: 8px 16px; background: var(--bg-muted, #f0f2f5); border: 1px solid var(--border-subtle, #d5d6da); border-radius: 6px; cursor: pointer;">重新截圖</button>
                 </div>
             </div>
 
             <div style="margin-bottom: 16px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">您的意見或建議：</label>
-                <textarea id="feedback-message" rows="4" style="width: 100%; padding: 12px; border: 1px solid #e0e4e8; border-radius: 8px; font-size: 1rem; resize: vertical; box-sizing: border-box;" placeholder="請描述您遇到的問題或建議..."></textarea>
+                <textarea id="feedback-message" rows="4" style="width: 100%; padding: 12px; border: 1px solid var(--border-subtle, #d5d6da); border-radius: 8px; font-size: 1rem; resize: vertical; box-sizing: border-box;" placeholder="請描述您遇到的問題或建議..."></textarea>
             </div>
 
             <div id="feedback-status" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 16px;"></div>
 
             <div style="display: flex; gap: 12px;">
-                <button onclick="submitFeedback(false)" style="flex: 1; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">送出</button>
-                <button onclick="submitFeedback(true)" style="flex: 1; padding: 12px; background: #ff5e5b; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">送出 + 贊助 ☕</button>
+                <button onclick="submitFeedback(false)" style="flex: 1; padding: 12px; background: var(--color-brand, #3b82f6); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">送出</button>
+                <button onclick="submitFeedback(true)" style="flex: 1; padding: 12px; background: var(--color-sponsor, #ff5e5b); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">送出 + 贊助 ☕</button>
             </div>
         </div>
     </div>
@@ -2395,6 +3490,21 @@
         document.getElementById('feedback-modal').onclick = (e) => {
             if (e.target.id === 'feedback-modal') closeFeedback();
         };
+    </script>
+    <script>
+    // Load site config for dynamic titles
+    fetch('data/site.json')
+        .then(r => r.ok ? r.json() : Promise.reject('no site.json'))
+        .then(config => {
+            const site = config.site || config;
+            const title = site.title || '';
+            if (title) {
+                document.title = title;
+                const h1 = document.getElementById('site-title');
+                if (h1) h1.textContent = title;
+            }
+        })
+        .catch(() => {/* use default title from HTML */});
     </script>
 </body>
 </html>

@@ -1,29 +1,34 @@
-# 網站設定
-# 複製此檔案為 site.yml 並修改
+# Site configuration — controls Dashboard titles and links.
+# Copy to configs/site.yml and edit for your industry.
+# Run: python scripts/export_configs.py to generate site/data/site.json
 
-# 網站基本資訊
 site:
-  title: "供應鏈情報"                    # 網站標題
-  subtitle: "Supply Chain Intelligence"  # 副標題（英文）
-  description: "追蹤產業供應鏈動態"       # 網站描述
-  
-# 頁面標題
+  title: "供應鏈情報"
+  subtitle: "Supply Chain Intel"
+  description: "追蹤產業動態"
+
 pages:
-  index: "情報總覽"                       # 首頁標題
-  how_it_works: "運作流程"                # 運作流程頁標題
+  index: "情報總覽"
+  how_it_works: "運作流程"
 
-# GitHub Pages 設定
 github:
-  cname: "example.intel.weiqi.kids"       # 自訂網域（可選）
-  repo: "weiqi-kids/example-intel"        # GitHub repo
+  cname: "example.intel.weiqi.kids"
+  repo: "weiqi-kids/example-intel"
 
-# 贊助連結
 sponsor:
-  enabled: true
-  url: "https://ko-fi.com/lightchang"
+  enabled: false
+  url: ""
   text: "贊助"
 
-# 意見回饋
 feedback:
-  enabled: true
-  api_url: "https://feedback-api.lightman-chang.workers.dev/submit"
+  enabled: false
+  api_url: ""
+
+# Industry identification (used by generate_docs_skeleton.py)
+industry_code: "IND"
+industry_name: "產業名稱"
+
+# ETF benchmarks for fund flow tracking (used by fetch_fund_flow.py)
+# etf_benchmarks:
+#   SPY: "S&P 500 ETF"
+#   QQQ: "Invesco QQQ Trust"

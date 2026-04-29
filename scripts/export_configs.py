@@ -26,6 +26,7 @@ def main():
         "importance_rules.yml",
         "anomaly_rules.yml",
         "7d_highlights_rules.yml",
+        "site.yml",
     ]
 
     # 統計資訊（給流程圖用）
@@ -99,6 +100,21 @@ def main():
             stats["silent_days_threshold"] = thresholds.get("topic_resurface", {}).get(
                 "min_silent_days", 14
             )
+
+        elif config_file == "site.yml":
+            site = data.get("site", data)
+            stats["site_title"] = site.get("title", "")
+
+    # Also copy site.json to site/data/ root for frontend access
+    site_config = configs_dir / "site.yml"
+    if site_config.exists():
+        with open(site_config, "r", encoding="utf-8") as f:
+            site_data = yaml.safe_load(f)
+        site_json_path = repo_root / "site" / "data" / "site.json"
+        site_json_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(site_json_path, "w", encoding="utf-8") as f:
+            json.dump(site_data, f, ensure_ascii=False, indent=2)
+        print(f"站台設定 → site/data/site.json")
 
     # 輸出統計摘要
     stats_path = output_dir / "stats.json"

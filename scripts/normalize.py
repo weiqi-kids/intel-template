@@ -108,46 +108,24 @@ def main():
         viz_companies = []
         viz_links = []
 
-        # Position mapping: role → row
-        role_to_row = {
-            "設備": "equip",
-            "材料": "material",
-            "EDA": "eda",
-            "IP": "eda",
-            "矽晶圓": "material",
-            "記憶體製造": "memory",
-            "利基記憶體": "memory",
-            "控制IC": "controller",
-            "記憶體模組": "module",
-            "代工": "foundry",
-            "封測": "osat",
-            "OSAT": "osat",
-            "GPU": "ai",
-            "GPU/CPU": "ai",
-            "AI 晶片": "ai",
-            "行動晶片": "ai",
-            "網通晶片": "ai",
-            "類比IC": "ai",
-            "功率半導體": "ai",
-            "車用晶片": "ai",
-            "系統": "system",
-            "消費電子": "system",
-            "CSP": "csp",
-        }
+        # Load supply chain layout from config (or auto-assign)
+        layout = config.get("supply_chain_layout", {})
+        role_to_row = layout.get("role_mapping", {})
+        row_y = layout.get("row_positions", {})
 
-        row_y = {
-            "equip": 0.04,
-            "material": 0.13,
-            "eda": 0.22,
-            "memory": 0.34,
-            "controller": 0.43,
-            "module": 0.52,
-            "foundry": 0.61,
-            "osat": 0.70,
-            "ai": 0.80,
-            "system": 0.89,
-            "csp": 0.96,
-        }
+        # Fallback: auto-assign rows from unique roles
+        if not role_to_row:
+            unique_roles = list(dict.fromkeys(
+                c.get("role", "other") for c in config.get("companies", [])
+            ))
+            role_to_row = {role: role.lower().replace(" ", "_") for role in unique_roles}
+
+        if not row_y:
+            row_keys = list(dict.fromkeys(role_to_row.values()))
+            for i, key in enumerate(row_keys):
+                row_y[key] = round(i / max(len(row_keys), 1), 2)
+
+        default_row = layout.get("default_row", "other")
 
         # Count companies per row
         from collections import defaultdict
@@ -155,7 +133,7 @@ def main():
         company_rows = []
         for company in config.get("companies", []):
             role = company.get("role", "")
-            row_key = role_to_row.get(role, "memory")
+            row_key = role_to_row.get(role, default_row)
             company_rows.append(row_key)
             row_counts[row_key] += 1
 

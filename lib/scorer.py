@@ -35,82 +35,60 @@ class ImportanceScorer:
 
     def _build_evaluators(self) -> dict[str, Callable]:
         """
-        建立條件字串 -> 評估函數的映射
+        Build condition string → evaluator function mapping.
 
-        支援的條件格式：
-        - "entities.companies.length > 1"
-        - "'hbm' in topics"
-        - "'dram_price' in topics or 'nand_price' in topics"
-        - "abs(sentiment.score) > 0.7"
-        - "has_upstream_downstream_mention"
+        Structural evaluators are built-in. Topic evaluators are
+        auto-generated from importance_rules.yml condition strings
+        matching the pattern "'topic_name' in topics".
         """
-        return {
+        evaluators = {
             "entities.companies.length > 1": self._eval_multi_company,
-            "'hbm' in topics": self._eval_topic_hbm,
-            "'dram_price' in topics or 'nand_price' in topics": self._eval_topic_price,
-            "'earnings' in topics": self._eval_topic_earnings,
             "abs(sentiment.score) > 0.7": self._eval_extreme_sentiment,
             "has_upstream_downstream_mention": self._eval_upstream_downstream,
-            # 記憶體產業特有
-            "'capacity' in topics or 'capex' in topics": self._eval_topic_capacity,
-            "'ai_server' in topics": self._eval_topic_ai_server,
-            "'advanced_packaging' in topics": self._eval_topic_advanced_packaging,
-            "'ai_memory' in topics": self._eval_topic_ai_memory,
         }
 
+        # Auto-generate topic evaluators from importance_rules.yml
+        for rule in self.rules:
+            condition = rule.get("condition", "")
+            if "in topics" in condition:
+                evaluators[condition] = self._make_topic_evaluator(condition)
+
+        return evaluators
+
+    @staticmethod
+    def _make_topic_evaluator(condition: str) -> Callable:
+        """Generate an evaluator function from a topic condition string.
+
+        Handles patterns like:
+        - "'hbm' in topics"
+        - "'dram_price' in topics or 'nand_price' in topics"
+        """
+        import re
+        topic_ids = re.findall(r"'(\w+)'\s+in\s+topics", condition)
+
+        def evaluator(event: dict) -> bool:
+            topics = event.get("topics", [])
+            return any(tid in topics for tid in topic_ids)
+
+        return evaluator
+
     def _eval_multi_company(self, event: dict) -> bool:
-        """多公司提及"""
+        """Multiple companies mentioned"""
         companies = event.get("entities", {}).get("companies", [])
         return len(companies) > 1
 
-    def _eval_topic_hbm(self, event: dict) -> bool:
-        """涉及 HBM"""
-        topics = event.get("topics", [])
-        return "hbm" in topics
-
-    def _eval_topic_price(self, event: dict) -> bool:
-        """涉及價格"""
-        topics = event.get("topics", [])
-        return "dram_price" in topics or "nand_price" in topics
-
-    def _eval_topic_earnings(self, event: dict) -> bool:
-        """涉及財報"""
-        topics = event.get("topics", [])
-        return "earnings" in topics
-
     def _eval_extreme_sentiment(self, event: dict) -> bool:
-        """情緒極端"""
+        """Extreme sentiment score"""
         sentiment = event.get("sentiment", {})
         score = sentiment.get("score", 0)
         return abs(score) > 0.7
 
     def _eval_upstream_downstream(self, event: dict) -> bool:
-        """供應鏈上下游同時提及"""
+        """Supply chain upstream/downstream co-mention"""
         if not self.matcher:
             return False
-
         companies = event.get("entities", {}).get("companies", [])
         return self.matcher.has_upstream_downstream_mention(companies)
-
-    def _eval_topic_capacity(self, event: dict) -> bool:
-        """涉及產能或資本支出"""
-        topics = event.get("topics", [])
-        return "capacity" in topics or "capex" in topics
-
-    def _eval_topic_ai_server(self, event: dict) -> bool:
-        """涉及 AI 伺服器"""
-        topics = event.get("topics", [])
-        return "ai_server" in topics
-
-    def _eval_topic_advanced_packaging(self, event: dict) -> bool:
-        """涉及先進封裝"""
-        topics = event.get("topics", [])
-        return "advanced_packaging" in topics
-
-    def _eval_topic_ai_memory(self, event: dict) -> bool:
-        """涉及 AI 記憶體"""
-        topics = event.get("topics", [])
-        return "ai_memory" in topics
 
     def score(self, event: dict) -> dict:
         """

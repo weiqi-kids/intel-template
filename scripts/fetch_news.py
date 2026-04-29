@@ -44,8 +44,7 @@ def fetch_company(company_id: str, fetcher_class) -> list[dict]:
         fetcher = fetcher_class()
 
         # RSS 類型直接抓取
-        rss_fetchers = ['SamsungFetcher', 'NVIDIAFetcher', 'AMDFetcher', 'AppleFetcher']
-        if hasattr(fetcher, '_fetch_rss') and fetcher_class.__name__ in rss_fetchers:
+        if hasattr(fetcher, '_fetch_rss') and getattr(fetcher, 'fetch_mode', '') == 'rss':
             if hasattr(fetcher, 'rss_url') and fetcher.rss_url:
                 docs = fetcher._fetch_rss()
             else:

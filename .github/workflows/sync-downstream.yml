@@ -1,6 +1,7 @@
 name: Sync to Downstream Repos
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:

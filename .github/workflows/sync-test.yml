@@ -1,0 +1,29 @@
+name: Sync Test (single repo)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: weiqi-kids
+
+      - name: Test token
+        run: echo "Token generated successfully"
+
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          repository: weiqi-kids/memory-intel
+          token: ${{ steps.app-token.outputs.token }}
+          path: target
+
+      - name: Show files
+        run: ls target/.claude/skills/ 2>/dev/null || echo "No skills dir yet"

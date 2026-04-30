@@ -41,6 +41,15 @@ jobs:
           - water-intel
 
     steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: weiqi-kids
+          repositories: ${{ matrix.repo }}
+
       - name: Checkout template repo
         uses: actions/checkout@v4
         with:
@@ -50,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: weiqi-kids/${{ matrix.repo }}
-          token: ${{ secrets.SYNC_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           path: target
 
       - name: Compute sync branch name
@@ -84,7 +93,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true'
         working-directory: target
         env:
-          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           BRANCH="${{ steps.branch.outputs.name }}"
           git config user.name "Template Sync Bot"

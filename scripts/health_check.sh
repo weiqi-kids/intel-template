@@ -9,7 +9,7 @@
 set -e
 
 # === 設定 ===
-REPO="weiqi-kids/memory-intel"  # 請修改為你的 repo
+REPO="weiqi-kids/YOUR-REPO"  # 請修改為你的 repo  # 請修改為你的 repo
 SITE_URL="https://memory.intel.weiqi.kids"  # 請修改為你的網址
 
 echo "================================================"

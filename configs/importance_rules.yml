@@ -1,4 +1,4 @@
-# 記憶體供應鏈 - 重要性評分規則
+# 重要性評分規則
 
 # 基礎分數為 0.5，加上各規則分數，上限 1.0
 rules:
@@ -10,7 +10,7 @@ rules:
   - name: "涉及 HBM"
     condition: "'hbm' in topics"
     score: +0.3
-    description: "HBM 是當前記憶體產業最熱門的技術"
+    description: "相關主題是當前產業熱門技術"
 
   - name: "涉及價格"
     condition: "'dram_price' in topics or 'nand_price' in topics"
@@ -40,14 +40,14 @@ rules:
   - name: "涉及 AI 伺服器"
     condition: "'ai_server' in topics"
     score: +0.2
-    description: "AI 伺服器是記憶體需求的主要成長動力"
+    description: "AI 伺服器是主要需求成長動力"
 
   - name: "涉及先進封裝"
     condition: "'advanced_packaging' in topics"
     score: +0.15
     description: "先進封裝是 HBM 的關鍵技術"
 
-  - name: "涉及 AI 記憶體"
+  - name: "涉及 AI 應用"
     condition: "'ai_memory' in topics"
     score: +0.2
-    description: "AI 記憶體是當前發展重點"
+    description: "AI 應用是當前發展重點"

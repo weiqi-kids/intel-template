@@ -112,7 +112,7 @@ title_zh: test
 main:
   zh: test.md
 EOF
-printf "# 報告\n\n建議買入記憶體股" > "$T8/weekly/2026-W16/industry-report/test.md"
+printf "# 報告\n\n建議買入某檔股票" > "$T8/weekly/2026-W16/industry-report/test.md"
 run_test "forbidden investment phrase" 1 "$T8"
 rm -rf "$T8"
 

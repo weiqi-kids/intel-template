@@ -19,19 +19,30 @@ templates/
 │   ├── detect_anomalies.py     # 異常偵測
 │   ├── generate_daily.py       # 生成每日報告
 │   ├── generate_7d_report.py   # 生成 7 日報告
-│   └── update_baselines.py     # 更新歷史基準線
+│   ├── update_baselines.py     # 更新歷史基準線
+│   ├── fetch_holders.py        # 大股東/持股異動
+│   ├── fetch_fund_flow.py      # ETF 資金流向
+│   ├── generate_financials_history.py  # 財報歷史
+│   ├── generate_llm_analysis.py        # LLM 分析報告
+│   ├── generate_docs_skeleton.py       # 文件骨架產生
+│   ├── validate_docs.py        # 文件驗證
+│   ├── validate_docs.sh        # 文件驗證 wrapper
+│   ├── backfill_financials.py  # 回填財報
+│   └── backfill_reports.py     # 回填 LLM 分析
 │
 ├── configs/                    # 設定檔範例
 │   ├── site.yml.example        # 網站設定（標題、連結）
 │   ├── companies.yml.example
 │   ├── topics.yml.example
+│   ├── feeds.yml.example
 │   ├── sentiment_rules.yml.example
 │   ├── importance_rules.yml.example
 │   ├── anomaly_rules.yml.example
 │   └── 7d_highlights_rules.yml.example
 │
 ├── fetchers/                   # 爬蟲
-│   └── base.py                 # 公司官網爬蟲基底類別
+│   ├── base.py                 # 公司官網爬蟲基底類別
+│   └── example_company.py      # 爬蟲範例
 │
 ├── site/                       # 前端 Dashboard
 │   └── index.html              # 動態載入設定（從 data/site.json）
@@ -45,8 +56,34 @@ templates/
 │   ├── daily/                  # 每日報告
 │   └── 7d/                     # 7 日報告
 │
+├── .claude/skills/             # Claude Code 操作指引
+│   ├── 每日檢查.md
+│   ├── 修復爬蟲.md
+│   ├── 關鍵字調整.md
+│   ├── 新增公司.md
+│   ├── 新增畫面功能.md
+│   ├── 執行抓取.md
+│   ├── 產出報告.md
+│   └── 畫面規範.md
+│
+├── tests/                      # 測試
+│   ├── test_history_dedup.py
+│   └── test_validate_docs.sh
+│
+├── docs/                       # 文件骨架
+│   ├── companies/
+│   ├── daily/
+│   ├── live/
+│   ├── monthly/
+│   ├── quarterly/
+│   ├── regulatory-archive/
+│   └── weekly/
+│
 ├── .github/workflows/
-│   └── daily-ingest.yml        # 每日自動抓取流程
+│   ├── daily-ingest.yml        # 每日自動抓取流程
+│   ├── deploy-pages.yml        # GitHub Pages 部署
+│   ├── validate-docs.yml       # 文件結構驗證
+│   └── sync-downstream.yml     # 同步 skills/workflows 到下游 repos
 │
 ├── requirements.txt            # Python 依賴
 └── .gitignore                  # Git 忽略規則
@@ -94,49 +131,31 @@ generate_daily → generate_7d_report → update_baselines → deploy
 
 ## 新建追蹤的流程
 
-### 快速建立（使用 memory-intel 為範本）
+### 從 Template 建立（推薦）
 
 ```bash
-# 1. 在 repos/ 下建立新目錄
-mkdir -p repos/{name}
+# 1. 從 template 建立新 repo
+gh repo create weiqi-kids/{name} --template weiqi-kids/intel-template --public
+git clone git@github.com:weiqi-kids/{name}.git
 
-# 2. 複製通用程式碼
-cp -r repos/memory-intel/lib repos/{name}/
-cp -r repos/memory-intel/scripts repos/{name}/
-cp repos/memory-intel/fetchers/base.py repos/{name}/fetchers/
-cp repos/memory-intel/.github/workflows/*.yml repos/{name}/.github/workflows/
-cp repos/memory-intel/requirements.txt repos/{name}/
-cp repos/memory-intel/.gitignore repos/{name}/
+# 2. 複製範例設定檔並編輯
+cp configs/companies.yml.example configs/companies.yml
+cp configs/topics.yml.example configs/topics.yml
+cp configs/feeds.yml.example configs/feeds.yml
+cp configs/site.yml.example configs/site.yml
+# 編輯各設定檔
 
-# 3. 複製前端（動態版）
-cp -r templates/site repos/{name}/
+# 3. 建立 fetchers（每家公司一個，參考 fetchers/example_company.py）
+cp fetchers/example_company.py fetchers/{company_id}.py
+# 編輯 fetcher，註冊到 scripts/fetch_companies.py
 
-# 4. 建立目錄結構
-mkdir -p repos/{name}/data/{raw,events,metrics,baselines,normalized,cards}
-mkdir -p repos/{name}/reports/{daily,7d}
-mkdir -p repos/{name}/site/data/{reports/daily,reports/7d,configs}
-```
+# 4. 設定 GitHub Pages
+mv site/CNAME.example site/CNAME
+# 編輯 CNAME 填入網域
 
-### 設定檔準備
-
-```bash
-# 1. 複製範例設定檔
-cp templates/configs/site.yml.example repos/{name}/configs/site.yml
-cp templates/configs/companies.yml.example repos/{name}/configs/companies.yml
-cp templates/configs/topics.yml.example repos/{name}/configs/topics.yml
-cp repos/memory-intel/configs/sentiment_rules.yml repos/{name}/configs/
-cp repos/memory-intel/configs/importance_rules.yml repos/{name}/configs/
-cp repos/memory-intel/configs/anomaly_rules.yml repos/{name}/configs/
-cp repos/memory-intel/configs/7d_highlights_rules.yml repos/{name}/configs/
-
-# 2. 編輯設定檔
-vim configs/site.yml          # 修改標題、網域、贊助連結
-vim configs/companies.yml     # 根據研究結果填入公司清單
-vim configs/topics.yml        # 填入追蹤主題和關鍵字
-
-# 3. 轉換 YAML 到 JSON（前端使用）
-python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('configs/site.yml'))))" > site/data/site.json
-python -c "import yaml, json; print(json.dumps(yaml.safe_load(open('configs/companies.yml'))))" > site/data/companies.json
+# 5. Push 並驗證
+git push origin main
+gh workflow run "Daily Data Ingest"
 ```
 
 ### 建立爬蟲
@@ -327,13 +346,11 @@ git push
 3. **向後相容**：修改時要考慮已複製出去的 repo
 4. **文件優先**：每次修改都要更新說明
 
-## 參考範例
+## 版型維護
 
-`repos/memory-intel/` 是第一個完成的追蹤，可作為完整參考：
-- 19 家記憶體供應鏈公司
-- 14 個追蹤主題
-- 20 個爬蟲實作
-- 完整的 D3.js Dashboard
+本 repo 是所有追蹤的版型來源（`weiqi-kids/intel-template`）。
+修改 `.claude/skills/` 或 `.github/workflows/` 後 push 到 main，
+`sync-downstream.yml` 會自動向 23 個下游 repo 建立同步 PR。
 
 ---
 

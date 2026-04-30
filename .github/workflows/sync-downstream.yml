@@ -49,7 +49,6 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: weiqi-kids
-          repositories: ${{ matrix.repo }}
 
       - name: Checkout template repo
         uses: actions/checkout@v4

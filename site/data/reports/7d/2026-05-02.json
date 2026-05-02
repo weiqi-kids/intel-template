@@ -1,0 +1,68 @@
+{
+  "date": "2026-05-02",
+  "date_range": {
+    "start": "2026-04-26",
+    "end": "2026-05-02"
+  },
+  "generated_at": "2026-05-02T08:56:14.348895Z",
+  "highlights": [],
+  "anomalies_7d": [],
+  "topic_7d_summary": {},
+  "company_7d_summary": {},
+  "comparisons": {
+    "vs_last_week": {
+      "event_count": {
+        "this": 0,
+        "last": 0,
+        "change_pct": 0
+      }
+    }
+  },
+  "daily_breakdown": [
+    {
+      "date": "2026-04-26",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-04-27",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-04-28",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-04-29",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-04-30",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-05-01",
+      "event_count": 0,
+      "sentiment_avg": 0
+    },
+    {
+      "date": "2026-05-02",
+      "event_count": 0,
+      "sentiment_avg": 0
+    }
+  ],
+  "llm_analysis": {
+    "summary": "本週（2026-04-26 ~ 2026-05-02）intel-template 產業動態較為平靜，未有重大事件發生。建議持續追蹤下週動態。",
+    "watchlist": [
+      {
+        "company": "intel-template 產業",
+        "reason": "本週無特定企業異常，建議持續追蹤整體產業走勢。"
+      }
+    ]
+  },
+  "generated_by": "claude-cli"
+}

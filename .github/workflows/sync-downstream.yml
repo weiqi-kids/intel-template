@@ -9,6 +9,7 @@ on:
       - '.github/workflows/daily-ingest.yml'
       - '.github/workflows/deploy-pages.yml'
       - '.github/workflows/validate-docs.yml'
+      - 'site/index.html'
 
 jobs:
   sync:
@@ -71,6 +72,11 @@ jobs:
           # Sync skills
           mkdir -p target/.claude/skills
           cp template/.claude/skills/*.md target/.claude/skills/ 2>/dev/null || true
+
+          # Sync site/index.html
+          if [ -f "template/site/index.html" ]; then
+            cp "template/site/index.html" "target/site/index.html"
+          fi
 
           # Sync workflows (exclude sync-downstream.yml itself)
           for f in daily-ingest.yml deploy-pages.yml validate-docs.yml; do

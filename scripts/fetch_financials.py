@@ -29,6 +29,8 @@ def fetch_company_financials(ticker: str) -> dict | None:
             return None
 
         # 找 Accounts Receivable 和 Inventory
+        # 優先精確匹配「Accounts Receivable」，找不到再退而求其次找「Receivables」
+        # （房屋建商如 DHI、TOL 使用 Receivables 而非 Accounts Receivable）
         ar_row = None
         inv_row = None
         for idx in bs.index:
@@ -37,6 +39,11 @@ def fetch_company_financials(ticker: str) -> dict | None:
                 ar_row = idx
             elif s == "inventory":
                 inv_row = idx
+        if ar_row is None:
+            for idx in bs.index:
+                if str(idx).lower() == "receivables":
+                    ar_row = idx
+                    break
 
         if ar_row is None and inv_row is None:
             return None

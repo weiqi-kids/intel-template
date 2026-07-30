@@ -119,3 +119,7 @@ git merge upstream/main
 # 或 cherry-pick 特定 commit
 git cherry-pick <commit-hash>
 ```
+
+---
+
+Maintained by Light. I build and maintain websites with AI as a service: [arthurs.tw](https://arthurs.tw/?utm_source=github&utm_medium=readme&utm_campaign=oss)
